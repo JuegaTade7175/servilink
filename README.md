@@ -1,126 +1,133 @@
-🔧 SERVILINK
-Propuesta de Proyecto — CS 2031 Desarrollo Basado en Plataformas
-Semana 3 • UTEC 2026-1
+# 🔧 ServiLink — Backend API
 
+**CS 2031 Desarrollo Basado en Plataformas — UTEC 2026-1**
 
-Integrante
-Código
-Tadeo Joaquín Cárdenas Soto.
-202510004
-José Enrique Hilario Ruiz Lam.
-202510050
-Sebastian Falvy Mendoza.
-202510469
-Joel Rodrigo Eulogio Coquil.
-202510112
-Miguel Adrian Espinoza Arnero.
-202320031
+Marketplace de servicios domésticos estilo "swipe". Conecta clientes con profesionales verificados (electricistas, plomeros, limpieza, jardinería) usando geolocalización con **OpenStreetMap + Leaflet** (open source, sin API key).
 
+---
 
-1. El Problema y la Solución
-Problema:  Las personas que necesitan servicios domésticos (plomería, electricidad, limpieza, jardinería) enfrentan una experiencia fragmentada y poco confiable al buscar profesionales: buscan en grupos de WhatsApp, piden referencias a conocidos o contratan sin verificación alguna. No existe una forma ágil, visual y segura de conectar con proveedores disponibles cerca de ti.
+## 👥 Integrantes
 
-Solución:  ServiLink — una app móvil y web estilo "swipe" que conecta a usuarios con profesionales de servicios domésticos verificados. El cliente desliza perfiles de proveedores cercanos (como Tinder, pero para contratar un gasfitero), ve su reputación en tiempo real, reserva y paga desde la misma plataforma.
+| Nombre | Código |
+|---|---|
+| Tadeo Joaquín Cárdenas Soto | 202510004 |
+| José Enrique Hilario Ruiz Lam | 202510050 |
+| Sebastian Falvy Mendoza | 202510469 |
+| Joel Rodrigo Eulogio Coquil | 202510112 |
+| Miguel Adrian Espinoza Arnero | 202320031 |
 
+---
 
-2. Funcionalidades Principales
-Todas las funcionalidades que el usuario podrá realizar:
-Registrarse como Cliente o Profesional (con verificación de identidad para proveedores)
-Explorar profesionales cercanos con vista de "cards" deslizables filtradas por categoría, distancia y disponibilidad
-Ver perfil completo del profesional: fotos, info, calificación, especialidades, precio estimado y disponibilidad en calendario
-Solicitar y reservar un servicio con hora y lugar acordados
-Pagar de forma segura con tarjeta, Yape o transferencia bancaria
-Chat integrado entre cliente y profesional tras la reserva
-Calificar y dejar reseña al finalizar el servicio
+## 🚀 Cómo correr el proyecto
 
-MVP (funcionalidades imprescindibles):
-Registro y autenticación de usuarios (cliente y profesional)
-Búsqueda y exploración de profesionales por geolocalización y categoría
-Reserva de servicio con confirmación
-Sistema básico de pagos integrado
+### Pre-requisitos
+- Java 21
+- Docker Desktop corriendo
 
+### 1. Levantar la base de datos
+```bash
+docker-compose up -d
+```
 
-3. Estructura de Datos
-Entidades principales del sistema (8 entidades):
-Entidad
-Descripción breve
-Usuario
-Datos base: nombre, email, foto, rol (cliente/profesional)
-Profesional
-Extiende Usuario: especialidad, zona de cobertura, tarifa base, certificados
-Servicio
-Tipo de trabajo ofrecido: categoría, descripción, precio referencial
-Reserva
-Solicitud de un cliente a un profesional para una fecha/hora específica
-Pago
-Transacción asociada a una Reserva: monto, método, estado
-Reseña
-Calificación (1-5) y comentario dejado por el cliente tras el servicio
-Categoría
-Clasificación del tipo de servicio: plomería, electricidad, limpieza, etc.
-Disponibilidad
-Horarios disponibles del profesional por día de semana
+### 2. Correr la app
+```bash
+./mvnw spring-boot:run
+```
 
+La app corre en `http://localhost:8081` y carga datos de prueba automáticamente.
 
-Relaciones clave:
-Un Usuario puede hacer muchas Reservas (1:N)
-Un Profesional puede ofrecer muchos Servicios y un Servicio puede ser ofrecido por muchos Profesionales (N:M)
-Una Reserva pertenece a un Cliente y a un Profesional, con un Servicio y un Pago asociado (N:M implícita)
-Un Profesional tiene muchos registros de Disponibilidad (1:N)
-Una Reserva puede tener una sola Reseña (1:1)
+### 3. Correr tests
+```bash
+./mvnw test
+```
 
+---
 
-4. Aspectos Técnicos
-Servicios externos a integrar:
-Google Maps / Geolocation API — mostrar profesionales cercanos en mapa y calcular distancias
-Stripe / MercadoPago — procesamiento seguro de pagos con tarjeta y billeteras digitales
-Firebase Cloud Messaging (FCM) — notificaciones push (confirmación de reserva, mensajes nuevos)
-Twilio / WhatsApp Business API — confirmaciones de cita por SMS o WhatsApp
-AWS S3 / Cloudinary — almacenamiento de fotos de perfil y portafolio de profesionales
+## 📡 Endpoints REST
 
-Operaciones asincrónicas (que requieren manejo especial):
-Procesamiento de pagos: depende de APIs externas con latencia variable
-Cálculo de rutas y distancias: consultas a Google Maps en tiempo real
-Envío de notificaciones push y SMS masivos
-Generación de reportes de historial de servicios y facturación
-Verificación de identidad de profesionales (validación de documentos en background)
+### Auth (público)
+| Método | Endpoint | Descripción |
+|---|---|---|
+| POST | `/api/auth/register` | Registrar usuario (CLIENT o PROFESSIONAL) |
+| POST | `/api/auth/login` | Login → retorna JWT |
 
+### Profesionales
+| Método | Endpoint | Auth | Descripción |
+|---|---|---|---|
+| GET | `/api/professionals/nearby?lat=X&lon=Y&radius=10` | No | Buscar por cercanía (Haversine) |
+| GET | `/api/professionals/search?lat=X&lon=Y&categoryId=1` | No | Buscar con filtros |
+| GET | `/api/professionals/{id}` | No | Ver perfil |
+| POST | `/api/professionals/profile` | PROFESSIONAL | Crear perfil |
+| PUT | `/api/professionals/profile` | PROFESSIONAL | Actualizar perfil |
+| GET | `/api/professionals/me` | PROFESSIONAL | Mi perfil |
 
-5. Mockups / Wireframes
-Los wireframes se han diseñado para reflejar una experiencia tipo "card swipe" (similar a Tinder) pero orientada a contratar servicios domésticos. A continuación, se describe el flujo y las pantallas clave:
+### Mapa (Leaflet / OpenStreetMap) — todos públicos
+| Método | Endpoint | Descripción |
+|---|---|---|
+| GET | `/api/map/professionals?lat=X&lon=Y&radius=10` | Pines del mapa |
+| GET | `/api/map/geocode?address=Miraflores` | Dirección → coordenadas |
+| GET | `/api/map/reverse-geocode?lat=X&lon=Y` | Coordenadas → dirección |
+| GET | `/api/map/distance?lat1=X&lon1=Y&lat2=X&lon2=Y` | Distancia Haversine |
 
-Pantallas principales:
-Home / Explorar: Grid de tarjetas de profesionales con foto, nombre, categoría, calificación y distancia. Filtros por categoría y disponibilidad en la parte superior.
-Perfil del Profesional: Foto grande, galería de trabajos, calificación detallada, servicios que ofrece, precio                     estimado, disponibilidad semanal y botón "Reservar ahora".
-Flujo de Reserva: Selector de fecha/hora → confirmación de servicio → resumen → pasarela de pago → confirmación con código QR.
-Dashboard del Cliente: Mis reservas activas e historial, acceso a chat con el profesional y opción de calificar servicios completados.
+### Categorías (público)
+| Método | Endpoint |
+|---|---|
+| GET | `/api/categories` |
+| GET | `/api/categories/{id}/services` |
+| POST | `/api/categories` |
 
+### Reservas (requiere JWT)
+| Método | Endpoint | Descripción |
+|---|---|---|
+| POST | `/api/bookings` | Crear reserva |
+| GET | `/api/bookings/my` | Mis reservas (cliente) |
+| GET | `/api/bookings/{id}` | Ver reserva |
+| PATCH | `/api/bookings/{id}/status` | Cambiar estado |
 
+### Pagos y Reseñas
+| Método | Endpoint |
+|---|---|
+| POST | `/api/payments` | Procesar pago |
+| GET | `/api/payments/booking/{bookingId}` | Ver pago |
+| POST | `/api/reviews` | Crear reseña (auto-actualiza rating) |
+| GET | `/api/reviews/professional/{id}` | Reseñas de un profesional |
 
+---
 
-6. Reflexión Final
-Parte más desafiante:
-La integración en tiempo real de geolocalización con filtrado dinámico de profesionales disponibles según distancia y horario será el mayor reto técnico. Además, implementar un sistema de pagos seguro con manejo de errores, reembolsos y estados de transacción asincrónica implica una lógica de backend robusta que va más allá de un CRUD básico.
+## 🏗️ Arquitectura
 
-Experiencia previa del equipo:
-Tenemos experiencia construyendo APIs REST con Spring Boot y bases de datos relacionales. Hemos trabajado con React para frontend básico, pero nunca hemos integrado una pasarela de pagos real ni optimizado consultas geográficas. Tampoco hemos implementado WebSockets para chat en tiempo real, lo cual representa un reto nuevo que queremos abordar.
+```
+src/main/java/com/example/demosass/
+├── config/          # SecurityConfig, AppConfig, DataInitializer
+├── controller/      # REST controllers (Auth, Professional, Map, Booking, Payment, Review, Category)
+├── domain/
+│   ├── enums/       # Role, BookingStatus, PaymentStatus, PaymentMethod, DayOfWeek
+│   ├── model/       # 8 entidades JPA
+│   └── repository/  # Spring Data JPA (con queries Haversine)
+├── dto/
+│   ├── request/     # Request DTOs con validación
+│   └── response/    # Response DTOs
+├── exception/       # GlobalExceptionHandler, excepciones custom
+├── security/        # JwtUtil, JwtFilter, UserDetailsServiceImpl
+└── service/         # Lógica de negocio (GeoService, AuthService, etc.)
+```
 
+## 🗺️ Integración OpenStreetMap
 
-ServiLink • CS 2031 DBP 2026-1 • Tadeo Cárdenas :)Otras opciones open source que pueden explorar para lo que buscan pueden ser:
-leaflet : 
-open street map: idea suena muy interesante y está bien planteada. Sería bueno que tengan una distribución de prioridades de las funcionalidades que piensan implementar, por ejemplo la confirmación de citas podrían primero tratar de implementarlo dentro de la app y luego usar la API externa si es que les alcanza el tiempo, lo cual sería uno de los últimos puntos a cubrir.
-Los lectores de este archivo pueden ver los comentarios y las sugerencias
-de los profesores y compañeros en el siguiente enlace: Leaflet
-an open-source JavaScript library
-for mobile-friendly interactive maps
+Se usa **Nominatim** (API gratuita de OSM) — sin API key, sin costo:
+- `GeoService.geocodeAddress()` → dirección a coordenadas
+- `GeoService.reverseGeocode()` → coordenadas a dirección  
+- `GeoService.calculateDistance()` → fórmula Haversine
+- Query Haversine en `ProfessionalRepository` para búsqueda por radio en DB
 
-Overview Tutorials Docs Download Plugins Blog
-August 16, 2025 — Leaflet 2.0.0-alpha.1 has been released!
-Leaflet is the leading open-source JavaScript library for mobile-friendly interactive maps. Weighing just about 42 KB of JS, it has all the mapping features most developers ever need.
+El frontend conecta con **Leaflet.js** usando los endpoints `/api/map/*`.
 
-Leaflet is designed with simplicity, performance and usability in mind. It works efficiently across all major desktop and mobile platforms, can be extended with lots of plugins, has a beautiful, easy to¡Bienvenido a OpenStreetMap!
-OpenStreetMap es un mapa del mundo, creado por gente como tú y de uso libre bajo una licencia abierta.
+## 🗄️ Entidades (8)
 
-El alojamiento cuenta con el respaldo de Fastly, Miembros corporativos de OSMF y otros socios.
+`User` → `Professional` (1:1) → `Service` (N:M) → `Category`
 
-Al utilizar este sitio web u otra infraestructura proporcionada por la Fundación OpenStreetMap, aceptas los Términos de uso.
+`User` → `Booking` (1:N) ← `Professional`
+
+`Booking` → `Payment` (1:1), `Booking` → `Review` (1:1)
+
+`Professional` → `Availability` (1:N)
