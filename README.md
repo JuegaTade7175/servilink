@@ -1,281 +1,126 @@
-# Week04-Lab01 - Spring Boot REST API
+🔧 SERVILINK
+Propuesta de Proyecto — CS 2031 Desarrollo Basado en Plataformas
+Semana 3 • UTEC 2026-1
 
-Proyecto Spring Boot con PostgreSQL, utilizando Docker Compose para la gestión de la base de datos.
 
-## 🚀 Inicio Rápido
+Integrante
+Código
+Tadeo Joaquín Cárdenas Soto.
+202510004
+José Enrique Hilario Ruiz Lam.
+202510050
+Sebastian Falvy Mendoza.
+202510469
+Joel Rodrigo Eulogio Coquil.
+202510112
+Miguel Adrian Espinoza Arnero.
+202320031
 
-### Requisitos Previos
-- Java 25+
-- Maven 3.8+
-- Docker y Docker Compose
-- Git
 
-### 1. Clonar el Repositorio
-```bash
-git clone <repository-url>
-cd demosass
-```
+1. El Problema y la Solución
+Problema:  Las personas que necesitan servicios domésticos (plomería, electricidad, limpieza, jardinería) enfrentan una experiencia fragmentada y poco confiable al buscar profesionales: buscan en grupos de WhatsApp, piden referencias a conocidos o contratan sin verificación alguna. No existe una forma ágil, visual y segura de conectar con proveedores disponibles cerca de ti.
 
-### 2. Configurar Variables de Entorno
-```bash
-cp .env.example .env
-```
+Solución:  ServiLink — una app móvil y web estilo "swipe" que conecta a usuarios con profesionales de servicios domésticos verificados. El cliente desliza perfiles de proveedores cercanos (como Tinder, pero para contratar un gasfitero), ve su reputación en tiempo real, reserva y paga desde la misma plataforma.
 
-Edita `.env` con tus valores si es necesario (por defecto están configurados correctamente).
 
-### 3. Iniciar la Base de Datos
-```bash
-docker-compose up -d
-```
+2. Funcionalidades Principales
+Todas las funcionalidades que el usuario podrá realizar:
+Registrarse como Cliente o Profesional (con verificación de identidad para proveedores)
+Explorar profesionales cercanos con vista de "cards" deslizables filtradas por categoría, distancia y disponibilidad
+Ver perfil completo del profesional: fotos, info, calificación, especialidades, precio estimado y disponibilidad en calendario
+Solicitar y reservar un servicio con hora y lugar acordados
+Pagar de forma segura con tarjeta, Yape o transferencia bancaria
+Chat integrado entre cliente y profesional tras la reserva
+Calificar y dejar reseña al finalizar el servicio
 
-Verifica que esté corriendo:
-```bash
-docker-compose ps
-```
+MVP (funcionalidades imprescindibles):
+Registro y autenticación de usuarios (cliente y profesional)
+Búsqueda y exploración de profesionales por geolocalización y categoría
+Reserva de servicio con confirmación
+Sistema básico de pagos integrado
 
-### 4. Compilar e Iniciar la Aplicación
-```bash
-./mvnw clean install
-./mvnw spring-boot:run
-```
 
-O en Windows:
-```bash
-mvnw.cmd clean install
-mvnw.cmd spring-boot:run
-```
+3. Estructura de Datos
+Entidades principales del sistema (8 entidades):
+Entidad
+Descripción breve
+Usuario
+Datos base: nombre, email, foto, rol (cliente/profesional)
+Profesional
+Extiende Usuario: especialidad, zona de cobertura, tarifa base, certificados
+Servicio
+Tipo de trabajo ofrecido: categoría, descripción, precio referencial
+Reserva
+Solicitud de un cliente a un profesional para una fecha/hora específica
+Pago
+Transacción asociada a una Reserva: monto, método, estado
+Reseña
+Calificación (1-5) y comentario dejado por el cliente tras el servicio
+Categoría
+Clasificación del tipo de servicio: plomería, electricidad, limpieza, etc.
+Disponibilidad
+Horarios disponibles del profesional por día de semana
 
-La aplicación estará disponible en: **http://localhost:8080**
 
-## 📁 Estructura del Proyecto
+Relaciones clave:
+Un Usuario puede hacer muchas Reservas (1:N)
+Un Profesional puede ofrecer muchos Servicios y un Servicio puede ser ofrecido por muchos Profesionales (N:M)
+Una Reserva pertenece a un Cliente y a un Profesional, con un Servicio y un Pago asociado (N:M implícita)
+Un Profesional tiene muchos registros de Disponibilidad (1:N)
+Una Reserva puede tener una sola Reseña (1:1)
 
-```
-demosass/
-├── src/main/java/com/example/demosass/
-│   ├── DemosassApplication.java              # Main class
-│   ├── config/
-│   │   └── MapperConfig.java                 # Configuración de mappers
-│   ├── controller/
-│   │   └── ProductController.java            # REST endpoints
-│   ├── dto/
-│   │   └── ProductDTO.java                   # Data Transfer Objects
-│   ├── exception/
-│   │   ├── ErrorResponse.java                # Respuesta de errores
-│   │   ├── GlobalExceptionHandler.java       # Manejo global de excepciones
-│   │   └── ResourceNotFoundException.java    # Excepción custom
-│   ├── model/
-│   │   └── Product.java                      # Entity de JPA
-│   ├── repository/
-│   │   └── ProductRepository.java            # Data access layer
-│   └── service/
-│       └── ProductService.java               # Lógica de negocio
-├── src/main/resources/
-│   └── application.properties                # Configuración de Spring Boot
-├── src/test/java/
-│   └── com/example/demosass/
-│       ├── DemosassApplicationTests.java
-│       ├── TestcontainersConfiguration.java
-│       └── TestDemosassApplication.java
-├── docker-compose.yml                        # Configuración de Docker
-├── .env                                      # Variables de entorno (local)
-├── .env.example                              # Plantilla de variables
-├── pom.xml                                   # Dependencias Maven
-└── README.md                                 # Este archivo
-```
 
-## 🔧 Configuración
+4. Aspectos Técnicos
+Servicios externos a integrar:
+Google Maps / Geolocation API — mostrar profesionales cercanos en mapa y calcular distancias
+Stripe / MercadoPago — procesamiento seguro de pagos con tarjeta y billeteras digitales
+Firebase Cloud Messaging (FCM) — notificaciones push (confirmación de reserva, mensajes nuevos)
+Twilio / WhatsApp Business API — confirmaciones de cita por SMS o WhatsApp
+AWS S3 / Cloudinary — almacenamiento de fotos de perfil y portafolio de profesionales
 
-### Variables de Entorno (.env)
-```properties
-DB_HOST=localhost        # Host de PostgreSQL
-DB_PORT=5432            # Puerto de PostgreSQL
-DB_NAME=week04-db       # Nombre de la base de datos
-DB_USER=postgres        # Usuario de BD
-DB_PASSWORD=postgres    # Contraseña de BD
-```
+Operaciones asincrónicas (que requieren manejo especial):
+Procesamiento de pagos: depende de APIs externas con latencia variable
+Cálculo de rutas y distancias: consultas a Google Maps en tiempo real
+Envío de notificaciones push y SMS masivos
+Generación de reportes de historial de servicios y facturación
+Verificación de identidad de profesionales (validación de documentos en background)
 
-### Propiedades de Spring Boot (application.properties)
-```properties
-spring.application.name=week04-lab01
-spring.datasource.url=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
-spring.datasource.username=${DB_USER}
-spring.datasource.password=${DB_PASSWORD}
-spring.jpa.hibernate.ddl-auto=create-drop
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-```
 
-## 🧪 Testing
+5. Mockups / Wireframes
+Los wireframes se han diseñado para reflejar una experiencia tipo "card swipe" (similar a Tinder) pero orientada a contratar servicios domésticos. A continuación, se describe el flujo y las pantallas clave:
 
-### Ejecutar Todos los Tests
-```bash
-./mvnw test
-```
+Pantallas principales:
+Home / Explorar: Grid de tarjetas de profesionales con foto, nombre, categoría, calificación y distancia. Filtros por categoría y disponibilidad en la parte superior.
+Perfil del Profesional: Foto grande, galería de trabajos, calificación detallada, servicios que ofrece, precio                     estimado, disponibilidad semanal y botón "Reservar ahora".
+Flujo de Reserva: Selector de fecha/hora → confirmación de servicio → resumen → pasarela de pago → confirmación con código QR.
+Dashboard del Cliente: Mis reservas activas e historial, acceso a chat con el profesional y opción de calificar servicios completados.
 
-### Ejecutar Test Específico
-```bash
-./mvnw test -Dtest=NombreDeLaClaseTest
-```
 
-### Con Cobertura
-```bash
-./mvnw test jacoco:report
-```
 
-## 🐳 Docker Compose
 
-### Iniciar
-```bash
-docker-compose up -d
-```
+6. Reflexión Final
+Parte más desafiante:
+La integración en tiempo real de geolocalización con filtrado dinámico de profesionales disponibles según distancia y horario será el mayor reto técnico. Además, implementar un sistema de pagos seguro con manejo de errores, reembolsos y estados de transacción asincrónica implica una lógica de backend robusta que va más allá de un CRUD básico.
 
-### Ver Logs
-```bash
-docker-compose logs -f postgres
-```
+Experiencia previa del equipo:
+Tenemos experiencia construyendo APIs REST con Spring Boot y bases de datos relacionales. Hemos trabajado con React para frontend básico, pero nunca hemos integrado una pasarela de pagos real ni optimizado consultas geográficas. Tampoco hemos implementado WebSockets para chat en tiempo real, lo cual representa un reto nuevo que queremos abordar.
 
-### Detener
-```bash
-docker-compose down
-```
 
-### Eliminar Datos
-```bash
-docker-compose down -v
-```
+ServiLink • CS 2031 DBP 2026-1 • Tadeo Cárdenas :)Otras opciones open source que pueden explorar para lo que buscan pueden ser:
+leaflet : 
+open street map: idea suena muy interesante y está bien planteada. Sería bueno que tengan una distribución de prioridades de las funcionalidades que piensan implementar, por ejemplo la confirmación de citas podrían primero tratar de implementarlo dentro de la app y luego usar la API externa si es que les alcanza el tiempo, lo cual sería uno de los últimos puntos a cubrir.
+Los lectores de este archivo pueden ver los comentarios y las sugerencias
+de los profesores y compañeros en el siguiente enlace: Leaflet
+an open-source JavaScript library
+for mobile-friendly interactive maps
 
-### Acceder a PostgreSQL
-```bash
-docker-compose exec postgres psql -U postgres -d week04-db
-```
+Overview Tutorials Docs Download Plugins Blog
+August 16, 2025 — Leaflet 2.0.0-alpha.1 has been released!
+Leaflet is the leading open-source JavaScript library for mobile-friendly interactive maps. Weighing just about 42 KB of JS, it has all the mapping features most developers ever need.
 
-## 📚 API Endpoints (Ejemplos)
+Leaflet is designed with simplicity, performance and usability in mind. It works efficiently across all major desktop and mobile platforms, can be extended with lots of plugins, has a beautiful, easy to¡Bienvenido a OpenStreetMap!
+OpenStreetMap es un mapa del mundo, creado por gente como tú y de uso libre bajo una licencia abierta.
 
-Asume que existen endpoints de Product.
+El alojamiento cuenta con el respaldo de Fastly, Miembros corporativos de OSMF y otros socios.
 
-### GET todos los productos
-```bash
-curl http://localhost:8080/api/products
-```
-
-### GET producto por ID
-```bash
-curl http://localhost:8080/api/products/{id}
-```
-
-### POST crear producto
-```bash
-curl -X POST http://localhost:8080/api/products \
-  -H "Content-Type: application/json" \
-  -d '{"name": "Producto", "price": 29.99}'
-```
-
-### PUT actualizar producto
-```bash
-curl -X PUT http://localhost:8080/api/products/{id} \
-  -H "Content-Type: application/json" \
-  -d '{"name": "Producto Actualizado", "price": 39.99}'
-```
-
-### DELETE producto
-```bash
-curl -X DELETE http://localhost:8080/api/products/{id}
-```
-
-## 🛠️ Herramientas y Tecnologías
-
-- **Spring Boot 4.0.5**: Framework web
-- **Spring Data JPA**: ORM y persistencia
-- **PostgreSQL 16**: Base de datos
-- **Docker**: Containerización
-- **Maven**: Gestión de dependencias
-- **Lombok**: Reducción de boilerplate
-- **Testcontainers**: Testing con contenedores
-
-## 📋 Dependencias Principales
-
-```xml
-<!-- Spring Boot -->
-<groupId>org.springframework.boot</groupId>
-
-<!-- Data JPA -->
-<artifactId>spring-boot-starter-data-jpa</artifactId>
-
-<!-- Web MVC -->
-<artifactId>spring-boot-starter-webmvc</artifactId>
-
-<!-- Validation -->
-<artifactId>spring-boot-starter-validation</artifactId>
-
-<!-- PostgreSQL -->
-<groupId>org.postgresql</groupId>
-<artifactId>postgresql</artifactId>
-
-<!-- Lombok -->
-<groupId>org.projectlombok</groupId>
-<artifactId>lombok</artifactId>
-
-<!-- Testcontainers -->
-<groupId>org.testcontainers</groupId>
-```
-
-## 🐛 Troubleshooting
-
-### Error: "Connection refused"
-```bash
-# Verifica que Docker está corriendo
-docker-compose ps
-
-# Revisa los logs
-docker-compose logs postgres
-
-# Reinicia
-docker-compose restart
-```
-
-### Error: "Port 5432 in use"
-Cambia el puerto en `.env`:
-```properties
-DB_PORT=5433
-```
-
-### Error: Base de datos no existe
-Limpia y reinicia:
-```bash
-docker-compose down -v
-docker-compose up -d
-```
-
-### Limpiar caché Maven
-```bash
-./mvnw clean
-```
-
-## 📖 Documentación Adicional
-
-- [Spring Boot Docs](https://spring.io/projects/spring-boot)
-- [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-- [Docker Documentation](https://docs.docker.com/)
-- [CONFIGURATION.md](./CONFIGURATION.md) - Configuración detallada
-
-## 👨‍💻 Contribuir
-
-1. Crea una rama: `git checkout -b feature/mi-feature`
-2. Comitea tus cambios: `git commit -am 'Add my feature'`
-3. Push a la rama: `git push origin feature/mi-feature`
-4. Abre un Pull Request
-
-## 📝 Licencia
-
-Este proyecto está bajo la licencia MIT.
-
-## 📞 Soporte
-
-Para reportar bugs o sugerencias, abre un issue en el repositorio.
-
----
-
-**Creado**: Abril 2026  
-**Versión**: 1.0.0-SNAPSHOT
-
+Al utilizar este sitio web u otra infraestructura proporcionada por la Fundación OpenStreetMap, aceptas los Términos de uso.
