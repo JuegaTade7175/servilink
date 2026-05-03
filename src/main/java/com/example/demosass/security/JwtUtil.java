@@ -14,7 +14,7 @@ public class JwtUtil {
     @Value("${jwt.secret:servilink-secret-key-2026-development-only-change-in-prod}")
     private String secret;
 
-    @Value("${jwt.expiration:86400000}") // 24h
+    @Value("${jwt.expiration:86400000}")
     private long expiration;
 
     private Key getKey() {

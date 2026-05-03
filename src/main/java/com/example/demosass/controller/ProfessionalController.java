@@ -53,10 +53,6 @@ public class ProfessionalController {
         return ResponseEntity.ok(professionalService.getByUserId(userId));
     }
 
-    /**
-     * Búsqueda de profesionales cercanos (Haversine).
-     * Retorna datos compatibles con Leaflet para el mapa interactivo.
-     */
     @GetMapping("/nearby")
     public ResponseEntity<List<ProfessionalResponse>> findNearby(
             @RequestParam Double lat,
@@ -67,10 +63,6 @@ public class ProfessionalController {
         return ResponseEntity.ok(professionalService.findNearby(request));
     }
 
-    /**
-     * Endpoint dedicado para Leaflet: retorna GeoPoints para pines del mapa.
-     * GET /api/map/professionals?lat=-12.05&lon=-77.05&radius=5&categoryId=1
-     */
     @GetMapping("/search")
     public ResponseEntity<List<ProfessionalResponse>> search(
             @RequestParam(required = false) Double lat,

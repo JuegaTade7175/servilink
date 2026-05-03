@@ -39,7 +39,6 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("Inicializando datos de ServiLink...");
 
-        // ─── Categorías ───────────────────────────────────────────────────────
         Category electricidad = categoryRepository.save(Category.builder()
             .name("Electricidad").description("Instalaciones y reparaciones eléctricas").build());
         Category plomeria = categoryRepository.save(Category.builder()
@@ -49,7 +48,6 @@ public class DataInitializer implements CommandLineRunner {
         Category jardineria = categoryRepository.save(Category.builder()
             .name("Jardinería").description("Mantenimiento de jardines").build());
 
-        // ─── Servicios ────────────────────────────────────────────────────────
         Service instElectrica = serviceRepository.save(Service.builder()
             .name("Instalación eléctrica").description("Instalación de tomacorrientes y llaves")
             .referencePrice(BigDecimal.valueOf(80)).estimatedDurationHours(2).category(electricidad).build());
@@ -60,7 +58,6 @@ public class DataInitializer implements CommandLineRunner {
             .name("Limpieza de hogar").description("Limpieza completa de departamento o casa")
             .referencePrice(BigDecimal.valueOf(60)).estimatedDurationHours(4).category(limpieza).build());
 
-        // ─── Usuarios y Profesionales (coordenadas de Lima) ───────────────────
         User u1 = userRepository.save(User.builder()
             .name("Juan Ríos Suárez").email("juan.rios@servilink.pe")
             .password(passwordEncoder.encode("password123"))
@@ -103,13 +100,11 @@ public class DataInitializer implements CommandLineRunner {
             .isVerified(false).averageRating(4.4).totalReviews(18)
             .services(List.of(limpiezaHogar)).build());
 
-        // Cliente de prueba
         userRepository.save(User.builder()
             .name("Carlos Mendoza").email("carlos@servilink.pe")
             .password(passwordEncoder.encode("password123"))
             .phone("954321098").role(Role.CLIENT).build());
 
-        // ─── Disponibilidades ─────────────────────────────────────────────────
         for (DayOfWeek day : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
                                       DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) {
             availabilityRepository.save(Availability.builder()

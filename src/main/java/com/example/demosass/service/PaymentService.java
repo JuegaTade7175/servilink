@@ -27,10 +27,6 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
 
-    /**
-     * Procesa un pago para una reserva.
-     * En MVP simula el proceso — en producción integrar MercadoPago/Stripe.
-     */
     @Transactional
     public PaymentResponse processPayment(Long bookingId, BigDecimal amount, PaymentMethod method) {
         Booking booking = bookingRepository.findById(bookingId)
@@ -44,8 +40,6 @@ public class PaymentService {
             throw new BadRequestException("No se puede pagar una reserva cancelada");
         }
 
-        // Simulación del procesamiento de pago (MVP)
-        // TODO: integrar MercadoPago SDK o Stripe cuando el tiempo lo permita
         String transactionId = "SL-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         log.info("Procesando pago {} con método {} para reserva {}", transactionId, method, bookingId);
 
@@ -58,7 +52,6 @@ public class PaymentService {
             .paidAt(LocalDateTime.now())
             .build();
 
-        // Actualizar estado de la reserva a CONFIRMED
         booking.setStatus(BookingStatus.CONFIRMED);
         bookingRepository.save(booking);
 

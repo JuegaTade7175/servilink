@@ -49,7 +49,6 @@ public class ReviewService {
 
         reviewRepository.save(review);
 
-        // Actualizar promedio del profesional automáticamente
         Professional professional = booking.getProfessional();
         Double avg = reviewRepository.calculateAverageRating(professional.getId());
         professional.setAverageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);

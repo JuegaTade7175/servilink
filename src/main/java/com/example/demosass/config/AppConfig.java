@@ -14,10 +14,6 @@ public class AppConfig {
         return new ModelMapper();
     }
 
-    /**
-     * RestTemplate configurado para llamadas a OpenStreetMap Nominatim.
-     * Requiere User-Agent según política de uso de Nominatim.
-     */
     @Bean
     public RestTemplate restTemplate() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
@@ -26,7 +22,6 @@ public class AppConfig {
 
         RestTemplate restTemplate = new RestTemplate(factory);
 
-        // Interceptor para añadir User-Agent (requerido por Nominatim OSM)
         restTemplate.getInterceptors().add((request, body, execution) -> {
             request.getHeaders().set("User-Agent", "ServiLink/1.0 (DBP UTEC 2026; contact: servilink@utec.edu.pe)");
             request.getHeaders().set("Accept-Language", "es");

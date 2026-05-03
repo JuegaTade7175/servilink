@@ -117,7 +117,6 @@ public class Responses {
         LocalDateTime createdAt
     ) {}
 
-    // Respuesta para mapa Leaflet / OpenStreetMap
     public record GeoPointResponse(
         Long professionalId,
         String name,

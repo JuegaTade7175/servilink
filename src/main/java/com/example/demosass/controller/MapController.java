@@ -10,10 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Controller dedicado para la integración con Leaflet + OpenStreetMap.
- * Todos los endpoints son públicos para que el mapa cargue sin auth.
- */
 @RestController
 @RequestMapping("/api/map")
 @RequiredArgsConstructor
@@ -22,10 +18,6 @@ public class MapController {
     private final ProfessionalService professionalService;
     private final GeoService geoService;
 
-    /**
-     * GeoPoints para los marcadores del mapa Leaflet.
-     * Responde con lat, lon y metadata de cada profesional.
-     */
     @GetMapping("/professionals")
     public ResponseEntity<List<GeoPointResponse>> getProfessionalsForMap(
             @RequestParam Double lat,
@@ -37,10 +29,6 @@ public class MapController {
         );
     }
 
-    /**
-     * Geocodifica una dirección usando OpenStreetMap Nominatim.
-     * El frontend usa esto para centrar el mapa en la dirección del usuario.
-     */
     @GetMapping("/geocode")
     public ResponseEntity<?> geocode(@RequestParam String address) {
         GeoService.GeocodingResult result = geoService.geocodeAddress(address);
@@ -54,10 +42,6 @@ public class MapController {
         ));
     }
 
-    /**
-     * Reverse geocoding: convierte coordenadas en dirección legible.
-     * Útil cuando el usuario hace click en el mapa Leaflet.
-     */
     @GetMapping("/reverse-geocode")
     public ResponseEntity<?> reverseGeocode(
             @RequestParam Double lat,
@@ -69,10 +53,6 @@ public class MapController {
         return ResponseEntity.ok(Map.of("address", address));
     }
 
-    /**
-     * Calcula distancia entre dos puntos (Haversine).
-     * Usado por el frontend para mostrar "X km de ti".
-     */
     @GetMapping("/distance")
     public ResponseEntity<Map<String, Object>> calculateDistance(
             @RequestParam Double lat1, @RequestParam Double lon1,

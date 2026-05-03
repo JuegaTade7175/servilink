@@ -45,7 +45,6 @@ public class ProfessionalService {
             .certifications(request.certifications())
             .build();
 
-        // Si se proporciona dirección pero no coordenadas, geocodificar con OpenStreetMap
         if (request.address() != null && request.latitude() == null) {
             GeoService.GeocodingResult geo = geoService.geocodeAddress(request.address());
             if (geo != null) {
@@ -88,10 +87,6 @@ public class ProfessionalService {
         return toResponse(p, null);
     }
 
-    /**
-     * Búsqueda por cercanía usando Haversine en DB + distancia calculada.
-     * Optimizado para Leaflet: retorna coordenadas listas para el mapa.
-     */
     @Transactional(readOnly = true)
     public List<ProfessionalResponse> findNearby(NearbySearchRequest request) {
         double radius = request.radiusKm() != null ? request.radiusKm() : DEFAULT_RADIUS_KM;
@@ -115,9 +110,6 @@ public class ProfessionalService {
             .toList();
     }
 
-    /**
-     * Retorna GeoPoints para el mapa Leaflet — endpoint especial para el frontend.
-     */
     @Transactional(readOnly = true)
     public List<GeoPointResponse> getGeoPoints(Double lat, Double lon, Double radius, Long categoryId) {
         NearbySearchRequest req = new NearbySearchRequest(lat, lon, radius, categoryId);
@@ -136,8 +128,6 @@ public class ProfessionalService {
         return professionalRepository.findByCategoryId(categoryId)
             .stream().map(p -> toResponse(p, null)).toList();
     }
-
-    // ─── Mapper ───────────────────────────────────────────────────────────────
 
     private ProfessionalResponse toResponse(Professional p, Double distanceKm) {
         List<ServiceResponse> services = p.getServices().stream()
