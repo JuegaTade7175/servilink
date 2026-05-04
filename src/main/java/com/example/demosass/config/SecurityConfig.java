@@ -36,11 +36,15 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Públicos — sin JWT
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/categories/**").permitAll()
                 .requestMatchers("/api/professionals/nearby").permitAll()
                 .requestMatchers("/api/professionals/search").permitAll()
+                .requestMatchers("/api/professionals/{id}").permitAll()
                 .requestMatchers("/api/map/**").permitAll()
+                .requestMatchers("/actuator/health").permitAll()
+                // Todo lo demás requiere JWT
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

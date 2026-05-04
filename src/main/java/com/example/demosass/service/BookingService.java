@@ -8,6 +8,7 @@ import com.example.demosass.dto.response.Responses.BookingResponse;
 import com.example.demosass.exception.BadRequestException;
 import com.example.demosass.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,12 +16,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ProfessionalRepository professionalRepository;
     private final ServiceRepository serviceRepository;
+    private final BookingConfirmationService confirmationService;
 
     @Transactional
     public BookingResponse create(Long clientId, CreateBookingRequest request) {
@@ -30,8 +33,9 @@ public class BookingService {
         Professional professional = professionalRepository.findById(request.professionalId())
             .orElseThrow(() -> new ResourceNotFoundException("Profesional no encontrado"));
 
-        com.example.demosass.domain.model.Service service = serviceRepository.findById(request.serviceId())
-            .orElseThrow(() -> new ResourceNotFoundException("Servicio no encontrado"));
+        com.example.demosass.domain.model.Service service =
+            serviceRepository.findById(request.serviceId())
+                .orElseThrow(() -> new ResourceNotFoundException("Servicio no encontrado"));
 
         Booking booking = Booking.builder()
             .client(client)
@@ -45,7 +49,16 @@ public class BookingService {
             .status(BookingStatus.PENDING)
             .build();
 
-        return toResponse(bookingRepository.save(booking));
+        Booking saved = bookingRepository.save(booking);
+
+        try {
+            confirmationService.generateConfirmation(saved.getId());
+            log.info("Código de confirmación generado para reserva {}", saved.getId());
+        } catch (Exception e) {
+            log.warn("No se pudo generar confirmación para reserva {}: {}", saved.getId(), e.getMessage());
+        }
+
+        return toResponse(saved);
     }
 
     @Transactional
@@ -57,7 +70,8 @@ public class BookingService {
         try {
             status = BookingStatus.valueOf(newStatus.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Estado inválido: " + newStatus);
+            throw new BadRequestException("Estado inválido: " + newStatus +
+                ". Valores válidos: PENDING, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED");
         }
 
         booking.setStatus(status);
@@ -66,14 +80,25 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public List<BookingResponse> getByClient(Long clientId) {
-        return bookingRepository.findByClientId(clientId).stream()
-            .map(this::toResponse).toList();
+        return bookingRepository.findByClientId(clientId)
+            .stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<BookingResponse> getByProfessional(Long professionalId) {
-        return bookingRepository.findByProfessionalId(professionalId).stream()
-            .map(this::toResponse).toList();
+        return bookingRepository.findByProfessionalId(professionalId)
+            .stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getByClientAndStatus(Long clientId, String status) {
+        try {
+            BookingStatus bs = BookingStatus.valueOf(status.toUpperCase());
+            return bookingRepository.findByClientIdAndStatus(clientId, bs)
+                .stream().map(this::toResponse).toList();
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Estado inválido: " + status);
+        }
     }
 
     @Transactional(readOnly = true)

@@ -36,7 +36,6 @@ public class Booking {
     @Column(name = "address", nullable = false)
     private String address;
 
-    // Coordenadas del cliente (para calcular distancia con OpenStreetMap)
     private Double clientLatitude;
     private Double clientLongitude;
 

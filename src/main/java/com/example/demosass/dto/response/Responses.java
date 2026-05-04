@@ -1,6 +1,7 @@
 package com.example.demosass.dto.response;
 
 import com.example.demosass.domain.enums.*;
+import com.example.demosass.domain.model.BookingConfirmation.ConfirmationStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -117,6 +118,22 @@ public class Responses {
         LocalDateTime createdAt
     ) {}
 
+    // ─── Nuevo: Confirmación de citas interna ─────────────────────────────────
+    public record BookingConfirmationResponse(
+        Long id,
+        Long bookingId,
+        String clientName,
+        String professionalName,
+        String serviceName,
+        LocalDateTime scheduledAt,
+        String confirmationCode,    // visible solo en el dashboard del profesional
+        ConfirmationStatus status,
+        LocalDateTime confirmedAt,
+        LocalDateTime expiresAt,
+        LocalDateTime createdAt
+    ) {}
+
+    // ─── Para el mapa Leaflet ─────────────────────────────────────────────────
     public record GeoPointResponse(
         Long professionalId,
         String name,
