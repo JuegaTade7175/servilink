@@ -1,6 +1,7 @@
 package com.example.demosass.config;
 
 import com.example.demosass.domain.enums.DayOfWeek;
+import com.example.demosass.domain.enums.NotificationType;
 import com.example.demosass.domain.enums.Role;
 import com.example.demosass.domain.model.*;
 import com.example.demosass.domain.repository.*;
@@ -27,6 +28,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ServiceRepository serviceRepository;
     private final ProfessionalRepository professionalRepository;
     private final AvailabilityRepository availabilityRepository;
+    private final NotificationRepository notificationRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -45,7 +47,7 @@ public class DataInitializer implements CommandLineRunner {
             .name("Plomería").description("Gasfitería y sistemas de agua").build());
         Category limpieza = categoryRepository.save(Category.builder()
             .name("Limpieza").description("Limpieza de hogar y oficinas").build());
-        Category jardineria = categoryRepository.save(Category.builder()
+        categoryRepository.save(Category.builder()
             .name("Jardinería").description("Mantenimiento de jardines").build());
 
         Service instElectrica = serviceRepository.save(Service.builder()
@@ -66,7 +68,7 @@ public class DataInitializer implements CommandLineRunner {
         Professional p1 = professionalRepository.save(Professional.builder()
             .user(u1).specialty("Electricista Certificado")
             .description("10 años de experiencia en instalaciones residenciales y comerciales")
-            .latitude(-12.0464).longitude(-77.0428)  // Miraflores, Lima
+            .latitude(-12.0464).longitude(-77.0428)
             .address("Av. Larco 345, Miraflores")
             .coverageRadiusKm(8.0).baseRate(BigDecimal.valueOf(50))
             .isVerified(true).averageRating(4.9).totalReviews(47)
@@ -80,7 +82,7 @@ public class DataInitializer implements CommandLineRunner {
         Professional p2 = professionalRepository.save(Professional.builder()
             .user(u2).specialty("Gasfitería y Plomería")
             .description("Especialista en tuberías PVC y cobre, emergencias 24/7")
-            .latitude(-12.0700).longitude(-77.0500)  // Surquillo, Lima
+            .latitude(-12.0700).longitude(-77.0500)
             .address("Jr. Tomas Marsano 200, Surquillo")
             .coverageRadiusKm(10.0).baseRate(BigDecimal.valueOf(40))
             .isVerified(true).averageRating(4.6).totalReviews(32)
@@ -94,13 +96,13 @@ public class DataInitializer implements CommandLineRunner {
         professionalRepository.save(Professional.builder()
             .user(u3).specialty("Limpieza Profesional")
             .description("Servicio de limpieza profunda con productos ecológicos")
-            .latitude(-12.0900).longitude(-77.0600)  // San Borja, Lima
+            .latitude(-12.0900).longitude(-77.0600)
             .address("Av. Angamos Este 500, San Borja")
             .coverageRadiusKm(12.0).baseRate(BigDecimal.valueOf(35))
             .isVerified(false).averageRating(4.4).totalReviews(18)
             .services(List.of(limpiezaHogar)).build());
 
-        userRepository.save(User.builder()
+        User carlos = userRepository.save(User.builder()
             .name("Carlos Mendoza").email("carlos@servilink.pe")
             .password(passwordEncoder.encode("password123"))
             .phone("954321098").role(Role.CLIENT).build());
@@ -116,6 +118,29 @@ public class DataInitializer implements CommandLineRunner {
             .professional(p1).dayOfWeek(DayOfWeek.SATURDAY)
             .startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(14, 0))
             .isAvailable(true).build());
+
+        for (DayOfWeek day : List.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY)) {
+            availabilityRepository.save(Availability.builder()
+                .professional(p2).dayOfWeek(day)
+                .startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(17, 0))
+                .isAvailable(true).build());
+        }
+
+        notificationRepository.save(Notification.builder()
+            .user(carlos)
+            .title("¡Bienvenido a ServiLink!")
+            .body("Encuentra profesionales verificados cerca de ti.")
+            .type(NotificationType.BOOKING_CREATED)
+            .referenceId(null)
+            .build());
+
+        notificationRepository.save(Notification.builder()
+            .user(u1)
+            .title("Tu perfil está listo")
+            .body("Comienza a recibir reservas de clientes en tu área.")
+            .type(NotificationType.BOOKING_CONFIRMED)
+            .referenceId(null)
+            .build());
 
         log.info("✅ Datos iniciales cargados: {} categorías, {} servicios, {} profesionales",
             categoryRepository.count(), serviceRepository.count(), professionalRepository.count());

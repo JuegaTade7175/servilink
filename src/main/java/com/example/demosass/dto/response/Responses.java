@@ -118,7 +118,6 @@ public class Responses {
         LocalDateTime createdAt
     ) {}
 
-    // ─── Nuevo: Confirmación de citas interna ─────────────────────────────────
     public record BookingConfirmationResponse(
         Long id,
         Long bookingId,
@@ -126,14 +125,13 @@ public class Responses {
         String professionalName,
         String serviceName,
         LocalDateTime scheduledAt,
-        String confirmationCode,    // visible solo en el dashboard del profesional
+        String confirmationCode,
         ConfirmationStatus status,
         LocalDateTime confirmedAt,
         LocalDateTime expiresAt,
         LocalDateTime createdAt
     ) {}
 
-    // ─── Para el mapa Leaflet ─────────────────────────────────────────────────
     public record GeoPointResponse(
         Long professionalId,
         String name,
@@ -144,6 +142,30 @@ public class Responses {
         BigDecimal baseRate,
         Double distanceKm,
         Boolean isVerified
+    ) {}
+
+    // ─── NUEVO: Chat / Mensajería ─────────────────────────────────────────────
+    public record MessageResponse(
+        Long id,
+        Long bookingId,
+        Long senderId,
+        String senderName,
+        Long receiverId,
+        String receiverName,
+        String content,
+        Boolean isRead,
+        LocalDateTime createdAt
+    ) {}
+
+    // ─── NUEVO: Notificaciones ────────────────────────────────────────────────
+    public record NotificationResponse(
+        Long id,
+        String title,
+        String body,
+        NotificationType type,
+        Long referenceId,
+        Boolean isRead,
+        LocalDateTime createdAt
     ) {}
 
     public record ErrorResponse(
