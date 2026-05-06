@@ -2,7 +2,7 @@
 
 **CS 2031 Desarrollo Basado en Plataformas — UTEC 2026-1**
 
-Marketplace de servicios domésticos estilo "swipe". Conecta clientes con profesionales verificados usando geolocalización con **OpenStreetMap + Leaflet** (open source, sin API key).
+Marketplace de servicios domésticos. Conecta clientes con profesionales verificados usando geolocalización con **OpenStreetMap + Leaflet** (open source, sin API key).
 
 ---
 
@@ -36,8 +36,7 @@ SERVER_PORT=8081
 ```
 
 ### 2. Levantar la base de datos
-Spring Boot levanta Docker Compose automáticamente al arrancar.
-O manualmente:
+Spring Boot levanta Docker Compose automáticamente al arrancar. O manualmente:
 ```bash
 docker-compose up -d
 ```
@@ -47,7 +46,7 @@ docker-compose up -d
 ./mvnw spring-boot:run
 ```
 
-La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos de prueba automáticamente (3 profesionales en Lima con coordenadas reales).
+La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos de prueba automáticamente.
 
 ### 4. Correr tests
 ```bash
@@ -64,7 +63,7 @@ La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos 
 | POST | `/api/auth/register` | Registro (CLIENT o PROFESSIONAL) |
 | POST | `/api/auth/login` | Login → retorna JWT |
 
-**Usuarios de prueba cargados automáticamente:**
+**Usuarios de prueba:**
 | Email | Password | Rol |
 |---|---|---|
 | `carlos@servilink.pe` | `password123` | CLIENT |
@@ -81,6 +80,20 @@ La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos 
 | POST | `/api/professionals/profile` | PROFESSIONAL | Crear perfil profesional |
 | PUT | `/api/professionals/profile` | PROFESSIONAL | Actualizar perfil |
 | GET | `/api/professionals/me` | PROFESSIONAL | Mi perfil |
+
+### Disponibilidad ← NUEVO
+| Método | Endpoint | Auth | Descripción |
+|---|---|---|---|
+| GET | `/api/availability/professional/{id}` | No | Ver horarios del profesional |
+| GET | `/api/availability/professional/{id}/day?day=MONDAY` | No | Ver horarios por día |
+| POST | `/api/availability` | PROFESSIONAL | Crear horario |
+| PUT | `/api/availability/{id}` | PROFESSIONAL | Actualizar horario |
+| DELETE | `/api/availability/{id}` | PROFESSIONAL | Eliminar horario |
+
+**Body para crear/actualizar:**
+```json
+{ "dayOfWeek": "MONDAY", "startTime": "08:00", "endTime": "18:00" }
+```
 
 ### Mapa — Leaflet / OpenStreetMap (público)
 | Método | Endpoint | Descripción |
@@ -108,24 +121,34 @@ La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos 
 | GET | `/api/bookings/{id}` | Ver reserva |
 | PATCH | `/api/bookings/{id}/status` | Cambiar estado |
 
-### ✅ Confirmación de Citas (nueva — implementación interna)
+### Confirmación de Citas
 | Método | Endpoint | Auth | Descripción |
 |---|---|---|---|
 | POST | `/api/confirmations/booking/{id}/generate` | Sí | Genera código de 6 dígitos |
-| POST | `/api/confirmations/confirm` | PROFESSIONAL | Profesional confirma con el código |
-| GET | `/api/confirmations/booking/{id}` | Sí | Ver estado de confirmación |
-| DELETE | `/api/confirmations/booking/{id}` | Sí | Cancelar confirmación |
+| POST | `/api/confirmations/confirm` | PROFESSIONAL | Confirmar con código |
+| GET | `/api/confirmations/booking/{id}` | Sí | Ver estado |
+| DELETE | `/api/confirmations/booking/{id}` | Sí | Cancelar |
 
-**Flujo de confirmación:**
-```
-1. Cliente crea reserva          → POST /api/bookings          (status: PENDING)
-2. Sistema genera código         → POST /api/confirmations/booking/{id}/generate
-3. Código aparece en dashboard   → GET  /api/confirmations/booking/{id}
-4. Profesional confirma          → POST /api/confirmations/confirm  {"code":"123456"}
-5. Reserva queda confirmada      → status: CONFIRMED ✓
+### Mensajes / Chat ← NUEVO
+| Método | Endpoint | Auth | Descripción |
+|---|---|---|---|
+| POST | `/api/messages/booking/{bookingId}` | Sí | Enviar mensaje |
+| GET | `/api/messages/booking/{bookingId}` | Sí | Ver conversación |
+| PATCH | `/api/messages/booking/{bookingId}/read` | Sí | Marcar como leídos |
+| GET | `/api/messages/unread/count` | Sí | Contar no leídos |
+
+**Body para enviar mensaje:**
+```json
+{ "content": "Hola, ¿a qué hora llegas?" }
 ```
 
-> **Nota:** La confirmación por WhatsApp/Twilio está planificada para cuando alcance el tiempo (último sprint). Por ahora el código vive dentro de la app, que es lo más robusto para el MVP.
+### Notificaciones ← NUEVO
+| Método | Endpoint | Auth | Descripción |
+|---|---|---|---|
+| GET | `/api/notifications` | Sí | Todas las notificaciones |
+| GET | `/api/notifications/unread` | Sí | Solo no leídas |
+| GET | `/api/notifications/unread/count` | Sí | Contador no leídas |
+| PATCH | `/api/notifications/read-all` | Sí | Marcar todas como leídas |
 
 ### Pagos (requiere JWT)
 | Método | Endpoint | Descripción |
@@ -135,23 +158,15 @@ La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos 
 
 **Body de pago:**
 ```json
-{
-  "bookingId": 1,
-  "amount": 100.00,
-  "method": "CARD"
-}
+{ "bookingId": 1, "amount": 100.00, "method": "CARD" }
 ```
-Métodos disponibles: `CARD`, `YAPE`, `BANK_TRANSFER`
-
-> **TODO:** Integrar MercadoPago SDK cuando corresponda. El `PaymentService` tiene el punto marcado.
+Métodos: `CARD`, `YAPE`, `BANK_TRANSFER`
 
 ### Reseñas (requiere JWT)
 | Método | Endpoint | Descripción |
 |---|---|---|
 | POST | `/api/reviews` | Crear reseña (solo reservas COMPLETED) |
 | GET | `/api/reviews/professional/{id}` | Reseñas de un profesional |
-
-Al crear una reseña, el `averageRating` del profesional se recalcula automáticamente.
 
 ---
 
@@ -160,35 +175,67 @@ Al crear una reseña, el `averageRating` del profesional se recalcula automátic
 ```
 src/main/java/com/example/demosass/
 ├── config/
-│   ├── AppConfig.java           # RestTemplate + ModelMapper beans
-│   ├── DataInitializer.java     # Seed de datos de prueba (Lima)
-│   ├── SecurityConfig.java      # JWT + CORS + rutas públicas/privadas
-│   └── StartupPortLogger.java   # Log del puerto al arrancar
+│   ├── AppConfig.java
+│   ├── DataInitializer.java          ← actualizado (seed de notificaciones)
+│   ├── SecurityConfig.java           ← actualizado (nuevas rutas públicas)
+│   └── StartupPortLogger.java
 ├── controller/
 │   ├── AuthController.java
+│   ├── AvailabilityController.java   ← NUEVO
 │   ├── BookingController.java
-│   ├── BookingConfirmationController.java  ← nuevo
+│   ├── BookingConfirmationController.java
 │   ├── MapController.java
+│   ├── MessageController.java        ← NUEVO
+│   ├── NotificationController.java   ← NUEVO
 │   ├── PaymentController.java
-│   ├── ProfessionalController.java
-│   └── PaymentController.java   # también contiene Review y Category
+│   └── ProfessionalController.java
 ├── domain/
-│   ├── enums/                   # Role, BookingStatus, PaymentStatus, PaymentMethod, DayOfWeek
-│   ├── model/                   # 9 entidades JPA
-│   │   └── BookingConfirmation.java  ← nueva
-│   └── repository/              # 9 repositorios Spring Data JPA
-│       └── BookingConfirmationRepository.java  ← nuevo
+│   ├── enums/
+│   │   ├── BookingStatus.java
+│   │   ├── DayOfWeek.java
+│   │   ├── NotificationType.java     ← NUEVO
+│   │   ├── PaymentMethod.java
+│   │   ├── PaymentStatus.java
+│   │   └── Role.java
+│   ├── model/                        # 11 entidades JPA
+│   │   ├── Availability.java
+│   │   ├── Booking.java
+│   │   ├── BookingConfirmation.java
+│   │   ├── Category.java
+│   │   ├── Message.java              ← NUEVO
+│   │   ├── Notification.java         ← NUEVO
+│   │   ├── Payment.java
+│   │   ├── Professional.java
+│   │   ├── Review.java
+│   │   ├── Service.java
+│   │   └── User.java
+│   └── repository/                   # 11 repositorios
+│       ├── AvailabilityRepository.java
+│       ├── BookingConfirmationRepository.java
+│       ├── BookingRepository.java
+│       ├── CategoryRepository.java
+│       ├── MessageRepository.java    ← NUEVO
+│       ├── NotificationRepository.java ← NUEVO
+│       ├── PaymentRepository.java
+│       ├── ProfessionalRepository.java
+│       ├── ReviewRepository.java
+│       ├── ServiceRepository.java
+│       └── UserRepository.java
 ├── dto/
-│   ├── request/                 # Request DTOs con validación Jakarta
-│   └── response/                # Response DTOs (records Java)
-├── exception/                   # GlobalExceptionHandler, custom exceptions
-├── security/                    # JwtUtil, JwtFilter, UserDetailsServiceImpl
+│   ├── request/
+│   └── response/
+│       └── Responses.java            ← actualizado (MessageResponse, NotificationResponse)
+├── exception/
+├── security/
 └── service/
     ├── AuthService.java
+    ├── AvailabilityService.java      ← NUEVO
+    ├── BookingConfirmationService.java
     ├── BookingService.java
-    ├── BookingConfirmationService.java  ← nuevo (con @Scheduled)
     ├── CategoryService.java
-    ├── GeoService.java          # OpenStreetMap Nominatim + Haversine
+    ├── GeoService.java
+    ├── MessageService.java           ← NUEVO
+    ├── NotificationService.java      ← NUEVO
     ├── PaymentService.java
     ├── ProfessionalService.java
     └── ReviewService.java
@@ -196,87 +243,48 @@ src/main/java/com/example/demosass/
 
 ---
 
-## 🗺️ Integración OpenStreetMap + Leaflet
-
-Sin API key, sin costo — recomendado por el equipo docente como alternativa open source a Google Maps.
-
-**Backend (GeoService):**
-- `geocodeAddress(address)` → Nominatim convierte dirección a lat/lon
-- `reverseGeocode(lat, lon)` → lat/lon a dirección legible
-- `calculateDistance(...)` → fórmula Haversine
-- Query JPQL con Haversine en `ProfessionalRepository` para búsqueda por radio en PostgreSQL
-
-**Frontend (Leaflet):**
-- `GET /api/map/professionals?lat=X&lon=Y&radius=10` → retorna `GeoPointResponse[]` listo para pines
-- Tiles gratuitos: `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`
-
-**Alternativas evaluadas (según sugerencia del equipo docente):**
-- Leaflet.js — elegida ✅ (ligera, 42KB, mobile-friendly)
-- OpenStreetMap Nominatim — elegida ✅ (sin API key)
-- Google Maps — descartada (costo)
-
----
-
-## 🗄️ Entidades (9)
+## 🗄️ Entidades (11)
 
 ```
 User ──────────── Professional (1:1)
-                      │
-                      ├──── Service (N:M) ──── Category (N:1)
-                      ├──── Availability (1:N)
-                      └──── Booking (1:N)
-                                │
-User (client) ────────────────┘
-                                │
-                                ├──── Payment (1:1)
-                                ├──── Review (1:1)
-                                └──── BookingConfirmation (1:1) ← nueva
+  │                   │
+  │                   ├──── Service (N:M) ──── Category (N:1)
+  │                   ├──── Availability (1:N)
+  │                   └──── Booking (1:N)
+  │                             │
+  ├── Booking (client) ────────┘
+  │                             ├──── Payment (1:1)
+  │                             ├──── Review (1:1)
+  │                             ├──── BookingConfirmation (1:1)
+  │                             └──── Message (1:N)  ← nueva
+  │
+  └──── Notification (1:N)  ← nueva
 ```
-
-| Entidad | Descripción |
-|---|---|
-| `User` | Base: nombre, email, rol (CLIENT/PROFESSIONAL/ADMIN) |
-| `Professional` | Extiende User: especialidad, lat/lon, tarifa, rating |
-| `Service` | Tipo de trabajo: categoría, precio referencial |
-| `Category` | Plomería, Electricidad, Limpieza, Jardinería |
-| `Booking` | Reserva: cliente + profesional + servicio + fecha |
-| `Payment` | Transacción: monto, método, estado, transactionId |
-| `Review` | Calificación 1-5 + comentario, actualiza rating automáticamente |
-| `Availability` | Horarios del profesional por día de semana |
-| `BookingConfirmation` | Código 6 dígitos + estado + expiración (48h) ← nueva |
 
 ---
 
-## ⚙️ Configuración (.env)
-
-```properties
-DB_HOST=localhost
-DB_PORT=5438
-DB_NAME=servilink-db
-DB_USER=postgres
-DB_PASSWORD=postgres
-SERVER_PORT=8081
-```
-
-La app lee el `.env` automáticamente vía `dotenv-java` en el arranque.
-
----
-
-## 🧪 Tests
+## 🧪 Tests (ampliados)
 
 ```bash
 ./mvnw test
 ```
 
-Incluye tests de integración con **Testcontainers** (PostgreSQL real en Docker):
-
 | Test | Qué verifica |
 |---|---|
-| `contextLoads` | El contexto de Spring Boot levanta sin errores |
-| `registerAndLoginFlow` | Registro → Login → JWT válido |
+| `contextLoads` | El contexto Spring Boot levanta |
+| `registerAndLoginFlow` | Registro → Login → JWT |
 | `getCategoriesPublicEndpoint` | Endpoint público sin auth |
-| `nearbySearchPublicEndpoint` | Búsqueda geográfica con Haversine |
-| `mapGeoDistanceEndpoint` | Cálculo de distancia entre dos puntos |
+| `nearbySearchPublicEndpoint` | Búsqueda Haversine |
+| `mapGeoDistanceEndpoint` | Distancia entre puntos |
+| `notificationsRequireAuth` | Seguridad en notificaciones |
+| `getNotificationsAuthenticated` | Notificaciones con JWT válido |
+| `getUnreadNotificationsCount` | Contador de no leídas |
+| `markAllNotificationsAsRead` | Marcar todas como leídas |
+| `messagesRequireAuth` | Seguridad en mensajes |
+| `unreadMessagesCount` | Contador mensajes no leídos |
+| `availabilityPublicEndpointReturnsOk` | Disponibilidad pública |
+| `createAvailabilityRequiresProfessional` | Solo PROFESSIONAL puede crear horarios |
+| `professionalCanCreateAvailability` | Flujo completo de disponibilidad |
 
 ---
 
@@ -285,16 +293,18 @@ Incluye tests de integración con **Testcontainers** (PostgreSQL real en Docker)
 | Funcionalidad | Estado |
 |---|---|
 | Auth JWT (registro + login) | ✅ Completo |
-| 9 entidades JPA + PostgreSQL | ✅ Completo |
+| 11 entidades JPA + PostgreSQL | ✅ Completo |
 | Búsqueda geográfica Haversine | ✅ Completo |
 | Integración OpenStreetMap Nominatim | ✅ Completo |
-| API REST completa (CRUD) | ✅ Completo |
+| API REST completa | ✅ Completo |
 | Confirmación de citas interna | ✅ Completo |
 | Pagos MVP (simulado) | ✅ Completo |
 | Reseñas + auto-rating | ✅ Completo |
-| Disponibilidad del profesional | ✅ Completo |
+| Disponibilidad CRUD | ✅ Completo |
+| Mensajería interna (chat) | ✅ Completo |
+| Notificaciones internas | ✅ Completo |
 | Integración MercadoPago real | 🔜 Próximo sprint |
-| Notificaciones WhatsApp / Twilio | 🔜 Último sprint (si alcanza) |
+| Notificaciones push (FCM) | 🔜 Último sprint |
 | Frontend React + Leaflet | 🔜 En paralelo |
 
 ---
