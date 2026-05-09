@@ -40,8 +40,8 @@ public class UserController {
         if (url == null || url.isBlank()) {
             throw new BadRequestException("La URL de la imagen es obligatoria");
         }
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            throw new BadRequestException("La URL debe comenzar con http:// o https://");
+        if (!url.startsWith("https://")) {
+            throw new BadRequestException("La URL debe comenzar con https://");
         }
         if (url.length() > 2048) {
             throw new BadRequestException("La URL es demasiado larga (máximo 2048 caracteres)");
