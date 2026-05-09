@@ -1,0 +1,657 @@
+{
+  "info": {
+    "name": "ServiLink API",
+    "_postman_id": "servilink-dbp-2026",
+    "description": "CS 2031 Desarrollo Basado en Plataformas — UTEC 2026-1\n\n**Instrucciones:**\n1. Importar en Postman\n2. Ir a la carpeta Auth → Register o Login\n3. El token JWT se guarda automáticamente en la variable {{token}}\n4. Todos los endpoints protegidos lo usan sin configuración adicional\n\n**Usuarios de prueba:**\n- carlos@servilink.pe / password123 (CLIENT)\n- juan.rios@servilink.pe / password123 (PROFESSIONAL)\n- maria.condori@servilink.pe / password123 (PROFESSIONAL)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081", "type": "string" },
+    { "key": "token",   "value": "", "type": "string" }
+  ],
+  "item": [
+
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Register — CLIENT",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 201) {",
+            "  const r = pm.response.json();",
+            "  pm.collectionVariables.set('token', r.token);",
+            "  console.log('Token guardado:', r.token.substring(0,30)+'...');",
+            "}"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Carlos Mendoza\",\n  \"email\": \"carlos.nuevo@servilink.pe\",\n  \"password\": \"password123\",\n  \"phone\": \"987654321\",\n  \"role\": \"CLIENT\"\n}" }
+          }
+        },
+        {
+          "name": "Register — PROFESSIONAL",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 201) {",
+            "  const r = pm.response.json();",
+            "  pm.collectionVariables.set('token', r.token);",
+            "}"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Ana López\",\n  \"email\": \"ana.lopez@servilink.pe\",\n  \"password\": \"password123\",\n  \"phone\": \"976543210\",\n  \"role\": \"PROFESSIONAL\"\n}" }
+          }
+        },
+        {
+          "name": "Login — CLIENT (datos de prueba)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 200) {",
+            "  const r = pm.response.json();",
+            "  pm.collectionVariables.set('token', r.token);",
+            "  console.log('✅ Token guardado para:', r.email);",
+            "}"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"carlos@servilink.pe\",\n  \"password\": \"password123\"\n}" }
+          }
+        },
+        {
+          "name": "Login — PROFESSIONAL (Juan Ríos)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 200) {",
+            "  const r = pm.response.json();",
+            "  pm.collectionVariables.set('token', r.token);",
+            "  console.log('✅ Token profesional guardado para:', r.email);",
+            "}"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"juan.rios@servilink.pe\",\n  \"password\": \"password123\"\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "👤 Usuarios",
+      "item": [
+        {
+          "name": "GET Mi perfil",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/users/me", "host": ["{{baseUrl}}"], "path": ["api","users","me"] }
+          }
+        },
+        {
+          "name": "PATCH Actualizar foto de perfil",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/users/profile-picture", "host": ["{{baseUrl}}"], "path": ["api","users","profile-picture"] },
+            "body": { "mode": "raw", "raw": "{\n  \"profilePictureUrl\": \"https://res.cloudinary.com/demo/image/upload/sample.jpg\"\n}" }
+          }
+        },
+        {
+          "name": "DELETE Eliminar foto de perfil",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/users/profile-picture", "host": ["{{baseUrl}}"], "path": ["api","users","profile-picture"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🔧 Profesionales",
+      "item": [
+        {
+          "name": "GET Buscar cercanos (Haversine)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/professionals/nearby?lat=-12.0464&lon=-77.0428&radius=15",
+              "host": ["{{baseUrl}}"], "path": ["api","professionals","nearby"],
+              "query": [
+                { "key": "lat", "value": "-12.0464" },
+                { "key": "lon", "value": "-77.0428" },
+                { "key": "radius", "value": "15" },
+                { "key": "categoryId", "value": "1", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Buscar con filtros",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/professionals/search?lat=-12.0464&lon=-77.0428&radius=10",
+              "host": ["{{baseUrl}}"], "path": ["api","professionals","search"],
+              "query": [
+                { "key": "lat", "value": "-12.0464" },
+                { "key": "lon", "value": "-77.0428" },
+                { "key": "radius", "value": "10" },
+                { "key": "categoryId", "value": "1", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Profesional por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/professionals/1", "host": ["{{baseUrl}}"], "path": ["api","professionals","1"] }
+          }
+        },
+        {
+          "name": "GET Mi perfil profesional",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/professionals/me", "host": ["{{baseUrl}}"], "path": ["api","professionals","me"] }
+          }
+        },
+        {
+          "name": "POST Crear perfil profesional",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/professionals/profile", "host": ["{{baseUrl}}"], "path": ["api","professionals","profile"] },
+            "body": { "mode": "raw", "raw": "{\n  \"specialty\": \"Electricista Certificado\",\n  \"description\": \"5 años de experiencia en Lima\",\n  \"latitude\": -12.0464,\n  \"longitude\": -77.0428,\n  \"address\": \"Av. Larco 345, Miraflores\",\n  \"coverageRadiusKm\": 10.0,\n  \"baseRate\": 50.00,\n  \"certifications\": \"Certificado SENATI 2022\"\n}" }
+          }
+        },
+        {
+          "name": "PUT Actualizar perfil profesional",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/professionals/profile", "host": ["{{baseUrl}}"], "path": ["api","professionals","profile"] },
+            "body": { "mode": "raw", "raw": "{\n  \"baseRate\": 60.00,\n  \"coverageRadiusKm\": 12.0\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "📅 Disponibilidad",
+      "item": [
+        {
+          "name": "GET Disponibilidad del profesional",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/availability/professional/1", "host": ["{{baseUrl}}"], "path": ["api","availability","professional","1"] }
+          }
+        },
+        {
+          "name": "GET Disponibilidad por día",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/availability/professional/1/day?day=MONDAY",
+              "host": ["{{baseUrl}}"], "path": ["api","availability","professional","1","day"],
+              "query": [{ "key": "day", "value": "MONDAY" }]
+            }
+          }
+        },
+        {
+          "name": "POST Crear horario",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/availability", "host": ["{{baseUrl}}"], "path": ["api","availability"] },
+            "body": { "mode": "raw", "raw": "{\n  \"dayOfWeek\": \"MONDAY\",\n  \"startTime\": \"08:00\",\n  \"endTime\": \"18:00\"\n}" }
+          }
+        },
+        {
+          "name": "PUT Actualizar horario",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/availability/1", "host": ["{{baseUrl}}"], "path": ["api","availability","1"] },
+            "body": { "mode": "raw", "raw": "{\n  \"startTime\": \"09:00\",\n  \"endTime\": \"17:00\",\n  \"isAvailable\": true\n}" }
+          }
+        },
+        {
+          "name": "DELETE Eliminar horario",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/availability/1", "host": ["{{baseUrl}}"], "path": ["api","availability","1"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🗺️ Mapa (OpenStreetMap)",
+      "item": [
+        {
+          "name": "GET Profesionales para Leaflet (GeoPoints)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/map/professionals?lat=-12.0464&lon=-77.0428&radius=10",
+              "host": ["{{baseUrl}}"], "path": ["api","map","professionals"],
+              "query": [
+                { "key": "lat", "value": "-12.0464" },
+                { "key": "lon", "value": "-77.0428" },
+                { "key": "radius", "value": "10" },
+                { "key": "categoryId", "value": "1", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Geocode (dirección → coordenadas)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/map/geocode?address=Miraflores, Lima",
+              "host": ["{{baseUrl}}"], "path": ["api","map","geocode"],
+              "query": [{ "key": "address", "value": "Miraflores, Lima" }]
+            }
+          }
+        },
+        {
+          "name": "GET Reverse Geocode (coordenadas → dirección)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/map/reverse-geocode?lat=-12.0464&lon=-77.0428",
+              "host": ["{{baseUrl}}"], "path": ["api","map","reverse-geocode"],
+              "query": [
+                { "key": "lat", "value": "-12.0464" },
+                { "key": "lon", "value": "-77.0428" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Distancia Haversine",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/map/distance?lat1=-12.0464&lon1=-77.0428&lat2=-12.0700&lon2=-77.0500",
+              "host": ["{{baseUrl}}"], "path": ["api","map","distance"],
+              "query": [
+                { "key": "lat1", "value": "-12.0464" },
+                { "key": "lon1", "value": "-77.0428" },
+                { "key": "lat2", "value": "-12.0700" },
+                { "key": "lon2", "value": "-77.0500" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "📋 Categorías",
+      "item": [
+        {
+          "name": "GET Todas las categorías",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/categories", "host": ["{{baseUrl}}"], "path": ["api","categories"] }
+          }
+        },
+        {
+          "name": "GET Categoría por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/categories/1", "host": ["{{baseUrl}}"], "path": ["api","categories","1"] }
+          }
+        },
+        {
+          "name": "GET Servicios de la categoría",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/categories/1/services", "host": ["{{baseUrl}}"], "path": ["api","categories","1","services"] }
+          }
+        },
+        {
+          "name": "POST Crear categoría",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/categories", "host": ["{{baseUrl}}"], "path": ["api","categories"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Pintura\",\n  \"description\": \"Pintura de interiores y exteriores\",\n  \"iconUrl\": null\n}" }
+          }
+        },
+        {
+          "name": "POST Agregar servicio a categoría",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/categories/1/services", "host": ["{{baseUrl}}"], "path": ["api","categories","1","services"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Instalación de enchufes\",\n  \"description\": \"Instalación de tomacorrientes y llaves\",\n  \"referencePrice\": 80.00,\n  \"estimatedDurationHours\": 2\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "📆 Reservas",
+      "item": [
+        {
+          "name": "POST Crear reserva",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/bookings", "host": ["{{baseUrl}}"], "path": ["api","bookings"] },
+            "body": { "mode": "raw", "raw": "{\n  \"professionalId\": 1,\n  \"serviceId\": 1,\n  \"scheduledAt\": \"2026-06-20T10:00:00\",\n  \"address\": \"Av. Test 123, Miraflores\",\n  \"clientLatitude\": -12.0464,\n  \"clientLongitude\": -77.0428,\n  \"description\": \"Necesito instalar 3 tomacorrientes en la sala\"\n}" }
+          }
+        },
+        {
+          "name": "GET Mis reservas (cliente)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/bookings/my", "host": ["{{baseUrl}}"], "path": ["api","bookings","my"] }
+          }
+        },
+        {
+          "name": "GET Reservas del profesional",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/professional?professionalId=1",
+              "host": ["{{baseUrl}}"], "path": ["api","bookings","professional"],
+              "query": [{ "key": "professionalId", "value": "1" }]
+            }
+          }
+        },
+        {
+          "name": "GET Reserva por ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/bookings/1", "host": ["{{baseUrl}}"], "path": ["api","bookings","1"] }
+          }
+        },
+        {
+          "name": "PATCH Cambiar estado → CONFIRMED",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/bookings/1/status", "host": ["{{baseUrl}}"], "path": ["api","bookings","1","status"] },
+            "body": { "mode": "raw", "raw": "{ \"status\": \"CONFIRMED\" }" }
+          }
+        },
+        {
+          "name": "PATCH Cambiar estado → COMPLETED",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/bookings/1/status", "host": ["{{baseUrl}}"], "path": ["api","bookings","1","status"] },
+            "body": { "mode": "raw", "raw": "{ \"status\": \"COMPLETED\" }" }
+          }
+        },
+        {
+          "name": "PATCH Cambiar estado → CANCELLED",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/bookings/1/status", "host": ["{{baseUrl}}"], "path": ["api","bookings","1","status"] },
+            "body": { "mode": "raw", "raw": "{ \"status\": \"CANCELLED\" }" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "✅ Confirmación de Citas",
+      "item": [
+        {
+          "name": "POST Generar código de confirmación",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/confirmations/booking/1/generate", "host": ["{{baseUrl}}"], "path": ["api","confirmations","booking","1","generate"] }
+          }
+        },
+        {
+          "name": "POST Confirmar con código (PROFESSIONAL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/confirmations/confirm", "host": ["{{baseUrl}}"], "path": ["api","confirmations","confirm"] },
+            "body": { "mode": "raw", "raw": "{ \"code\": \"123456\" }" }
+          }
+        },
+        {
+          "name": "GET Ver estado de confirmación",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/confirmations/booking/1", "host": ["{{baseUrl}}"], "path": ["api","confirmations","booking","1"] }
+          }
+        },
+        {
+          "name": "DELETE Cancelar confirmación",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/confirmations/booking/1", "host": ["{{baseUrl}}"], "path": ["api","confirmations","booking","1"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "💬 Mensajes / Chat",
+      "item": [
+        {
+          "name": "POST Enviar mensaje",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/messages/booking/1", "host": ["{{baseUrl}}"], "path": ["api","messages","booking","1"] },
+            "body": { "mode": "raw", "raw": "{ \"content\": \"Hola, ¿a qué hora llegas?\" }" }
+          }
+        },
+        {
+          "name": "GET Conversación de la reserva",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/messages/booking/1", "host": ["{{baseUrl}}"], "path": ["api","messages","booking","1"] }
+          }
+        },
+        {
+          "name": "PATCH Marcar mensajes como leídos",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/messages/booking/1/read", "host": ["{{baseUrl}}"], "path": ["api","messages","booking","1","read"] }
+          }
+        },
+        {
+          "name": "GET Contador de mensajes no leídos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/messages/unread/count", "host": ["{{baseUrl}}"], "path": ["api","messages","unread","count"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🔔 Notificaciones",
+      "item": [
+        {
+          "name": "GET Todas mis notificaciones",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/notifications", "host": ["{{baseUrl}}"], "path": ["api","notifications"] }
+          }
+        },
+        {
+          "name": "GET Solo no leídas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/notifications/unread", "host": ["{{baseUrl}}"], "path": ["api","notifications","unread"] }
+          }
+        },
+        {
+          "name": "GET Contador de no leídas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/notifications/unread/count", "host": ["{{baseUrl}}"], "path": ["api","notifications","unread","count"] }
+          }
+        },
+        {
+          "name": "PATCH Marcar todas como leídas",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/notifications/read-all", "host": ["{{baseUrl}}"], "path": ["api","notifications","read-all"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "💳 Pagos",
+      "item": [
+        {
+          "name": "POST Procesar pago — CARD",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/payments", "host": ["{{baseUrl}}"], "path": ["api","payments"] },
+            "body": { "mode": "raw", "raw": "{\n  \"bookingId\": 1,\n  \"amount\": 100.00,\n  \"method\": \"CARD\"\n}" }
+          }
+        },
+        {
+          "name": "POST Procesar pago — YAPE",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/payments", "host": ["{{baseUrl}}"], "path": ["api","payments"] },
+            "body": { "mode": "raw", "raw": "{\n  \"bookingId\": 1,\n  \"amount\": 100.00,\n  \"method\": \"YAPE\"\n}" }
+          }
+        },
+        {
+          "name": "POST Procesar pago — BANK_TRANSFER",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/payments", "host": ["{{baseUrl}}"], "path": ["api","payments"] },
+            "body": { "mode": "raw", "raw": "{\n  \"bookingId\": 1,\n  \"amount\": 100.00,\n  \"method\": \"BANK_TRANSFER\"\n}" }
+          }
+        },
+        {
+          "name": "GET Ver pago de una reserva",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/payments/booking/1", "host": ["{{baseUrl}}"], "path": ["api","payments","booking","1"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "⭐ Reseñas",
+      "item": [
+        {
+          "name": "POST Crear reseña (reserva COMPLETED)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/reviews", "host": ["{{baseUrl}}"], "path": ["api","reviews"] },
+            "body": { "mode": "raw", "raw": "{\n  \"bookingId\": 1,\n  \"rating\": 5,\n  \"comment\": \"Excelente trabajo, muy puntual y profesional. 100% recomendado.\"\n}" }
+          }
+        },
+        {
+          "name": "GET Reseñas del profesional",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/reviews/professional/1", "host": ["{{baseUrl}}"], "path": ["api","reviews","professional","1"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🏥 Health Check",
+      "item": [
+        {
+          "name": "GET Actuator Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/actuator/health", "host": ["{{baseUrl}}"], "path": ["actuator","health"] }
+          }
+        }
+      ]
+    }
+
+  ]
+}
