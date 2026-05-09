@@ -71,6 +71,20 @@ La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos 
 | `maria.condori@servilink.pe` | `password123` | PROFESSIONAL |
 | `luis.paredes@servilink.pe` | `password123` | PROFESSIONAL |
 
+### Usuarios ← NUEVO
+| Método | Endpoint | Auth | Descripción |
+|---|---|---|---|
+| GET | `/api/users/me` | Sí | Ver mi perfil |
+| PATCH | `/api/users/profile-picture` | Sí | Actualizar foto de perfil (URL externa) |
+| DELETE | `/api/users/profile-picture` | Sí | Eliminar foto de perfil |
+
+**Body para actualizar foto:**
+```json
+{ "profilePictureUrl": "https://res.cloudinary.com/demo/image/upload/sample.jpg" }
+```
+
+> **Servicios gratuitos compatibles:** Cloudinary (25 GB free), Imgur, ImgBB. El cliente sube la imagen al servicio externo y envía solo la URL resultante.
+
 ### Profesionales
 | Método | Endpoint | Auth | Descripción |
 |---|---|---|---|
@@ -81,7 +95,7 @@ La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos 
 | PUT | `/api/professionals/profile` | PROFESSIONAL | Actualizar perfil |
 | GET | `/api/professionals/me` | PROFESSIONAL | Mi perfil |
 
-### Disponibilidad ← NUEVO
+### Disponibilidad
 | Método | Endpoint | Auth | Descripción |
 |---|---|---|---|
 | GET | `/api/availability/professional/{id}` | No | Ver horarios del profesional |
@@ -124,16 +138,16 @@ La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos 
 ### Confirmación de Citas
 | Método | Endpoint | Auth | Descripción |
 |---|---|---|---|
-| POST | `/api/confirmations/booking/{id}/generate` | Sí | Genera código de 6 dígitos |
+| POST | `/api/confirmations/booking/{id}/generate` | Sí | Genera código de 6 dígitos (expira 48h) |
 | POST | `/api/confirmations/confirm` | PROFESSIONAL | Confirmar con código |
 | GET | `/api/confirmations/booking/{id}` | Sí | Ver estado |
 | DELETE | `/api/confirmations/booking/{id}` | Sí | Cancelar |
 
-### Mensajes / Chat ← NUEVO
+### Mensajes / Chat — REST + WebSocket STOMP
 | Método | Endpoint | Auth | Descripción |
 |---|---|---|---|
-| POST | `/api/messages/booking/{bookingId}` | Sí | Enviar mensaje |
-| GET | `/api/messages/booking/{bookingId}` | Sí | Ver conversación |
+| POST | `/api/messages/booking/{bookingId}` | Sí | Enviar mensaje (persiste en BD) |
+| GET | `/api/messages/booking/{bookingId}` | Sí | Ver conversación completa |
 | PATCH | `/api/messages/booking/{bookingId}/read` | Sí | Marcar como leídos |
 | GET | `/api/messages/unread/count` | Sí | Contar no leídos |
 
@@ -142,7 +156,21 @@ La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos 
 { "content": "Hola, ¿a qué hora llegas?" }
 ```
 
-### Notificaciones ← NUEVO
+**WebSocket STOMP (tiempo real):**
+```
+Conectar:        ws://localhost:8081/ws  (header Authorization: Bearer <token>)
+Enviar mensaje:  /app/chat/{bookingId}
+Suscribirse:     /topic/booking/{bookingId}
+Notificaciones:  /user/queue/notifications
+Errores:         /user/queue/errors
+```
+
+**Payload WebSocket:**
+```json
+{ "token": "Bearer <jwt>", "content": "Hola!" }
+```
+
+### Notificaciones
 | Método | Endpoint | Auth | Descripción |
 |---|---|---|---|
 | GET | `/api/notifications` | Sí | Todas las notificaciones |
@@ -176,24 +204,26 @@ Métodos: `CARD`, `YAPE`, `BANK_TRANSFER`
 src/main/java/com/example/demosass/
 ├── config/
 │   ├── AppConfig.java
-│   ├── DataInitializer.java          ← actualizado (seed de notificaciones)
-│   ├── SecurityConfig.java           ← actualizado (nuevas rutas públicas)
-│   └── StartupPortLogger.java
+│   ├── DataInitializer.java
+│   ├── SecurityConfig.java
+│   ├── StartupPortLogger.java
+│   └── WebSocketConfig.java          ← STOMP + JWT auth en CONNECT
 ├── controller/
 │   ├── AuthController.java
-│   ├── AvailabilityController.java   ← NUEVO
+│   ├── AvailabilityController.java
 │   ├── BookingController.java
 │   ├── BookingConfirmationController.java
 │   ├── MapController.java
-│   ├── MessageController.java        ← NUEVO
-│   ├── NotificationController.java   ← NUEVO
+│   ├── MessageController.java
+│   ├── NotificationController.java
 │   ├── PaymentController.java
-│   └── ProfessionalController.java
+│   ├── ProfessionalController.java
+│   └── UserController.java           ← NUEVO (perfil + foto de perfil)
 ├── domain/
 │   ├── enums/
 │   │   ├── BookingStatus.java
 │   │   ├── DayOfWeek.java
-│   │   ├── NotificationType.java     ← NUEVO
+│   │   ├── NotificationType.java
 │   │   ├── PaymentMethod.java
 │   │   ├── PaymentStatus.java
 │   │   └── Role.java
@@ -202,8 +232,8 @@ src/main/java/com/example/demosass/
 │   │   ├── Booking.java
 │   │   ├── BookingConfirmation.java
 │   │   ├── Category.java
-│   │   ├── Message.java              ← NUEVO
-│   │   ├── Notification.java         ← NUEVO
+│   │   ├── Message.java
+│   │   ├── Notification.java
 │   │   ├── Payment.java
 │   │   ├── Professional.java
 │   │   ├── Review.java
@@ -214,8 +244,8 @@ src/main/java/com/example/demosass/
 │       ├── BookingConfirmationRepository.java
 │       ├── BookingRepository.java
 │       ├── CategoryRepository.java
-│       ├── MessageRepository.java    ← NUEVO
-│       ├── NotificationRepository.java ← NUEVO
+│       ├── MessageRepository.java
+│       ├── NotificationRepository.java
 │       ├── PaymentRepository.java
 │       ├── ProfessionalRepository.java
 │       ├── ReviewRepository.java
@@ -224,21 +254,30 @@ src/main/java/com/example/demosass/
 ├── dto/
 │   ├── request/
 │   └── response/
-│       └── Responses.java            ← actualizado (MessageResponse, NotificationResponse)
+│       └── Responses.java
 ├── exception/
+│   ├── BadRequestException.java
+│   ├── GlobalExceptionHandler.java
+│   └── ResourceNotFoundException.java
 ├── security/
-└── service/
-    ├── AuthService.java
-    ├── AvailabilityService.java      ← NUEVO
-    ├── BookingConfirmationService.java
-    ├── BookingService.java
-    ├── CategoryService.java
-    ├── GeoService.java
-    ├── MessageService.java           ← NUEVO
-    ├── NotificationService.java      ← NUEVO
-    ├── PaymentService.java
-    ├── ProfessionalService.java
-    └── ReviewService.java
+│   ├── JwtFilter.java
+│   ├── JwtUtil.java
+│   └── UserDetailsServiceImpl.java
+├── service/
+│   ├── AuthService.java
+│   ├── AvailabilityService.java
+│   ├── BookingConfirmationService.java
+│   ├── BookingService.java
+│   ├── CategoryService.java
+│   ├── FcmPushService.java           ← push simulado, listo para Firebase real
+│   ├── GeoService.java
+│   ├── MessageService.java
+│   ├── NotificationService.java
+│   ├── PaymentService.java
+│   ├── ProfessionalService.java
+│   └── ReviewService.java
+└── websocket/
+    └── ChatWebSocketController.java  ← STOMP en tiempo real
 ```
 
 ---
@@ -252,18 +291,33 @@ User ──────────── Professional (1:1)
   │                   ├──── Availability (1:N)
   │                   └──── Booking (1:N)
   │                             │
-  ├── Booking (client) ────────┘
+  ├── Booking (client) ─────────┤
   │                             ├──── Payment (1:1)
   │                             ├──── Review (1:1)
   │                             ├──── BookingConfirmation (1:1)
-  │                             └──── Message (1:N)  ← nueva
+  │                             └──── Message (1:N)
   │
-  └──── Notification (1:N)  ← nueva
+  └──── Notification (1:N)
 ```
 
 ---
 
-## 🧪 Tests (ampliados)
+## 🌐 WebSocket — Flujo del chat
+
+```
+Cliente  ──CONNECT /ws (JWT en header)──►  WebSocketConfig valida token
+         ◄──── sesión autenticada ──────
+
+Cliente  ──SEND /app/chat/{bookingId}──►  ChatWebSocketController
+                                               │
+                                               ├─► MessageService.send() → PostgreSQL
+                                               ├─► /topic/booking/{id}  (broadcast)
+                                               └─► /user/{id}/queue/notifications
+```
+
+---
+
+## 🧪 Tests (14 tests de integración)
 
 ```bash
 ./mvnw test
@@ -276,15 +330,15 @@ User ──────────── Professional (1:1)
 | `getCategoriesPublicEndpoint` | Endpoint público sin auth |
 | `nearbySearchPublicEndpoint` | Búsqueda Haversine |
 | `mapGeoDistanceEndpoint` | Distancia entre puntos |
-| `notificationsRequireAuth` | Seguridad en notificaciones |
-| `getNotificationsAuthenticated` | Notificaciones con JWT válido |
-| `getUnreadNotificationsCount` | Contador de no leídas |
-| `markAllNotificationsAsRead` | Marcar todas como leídas |
-| `messagesRequireAuth` | Seguridad en mensajes |
+| `notificationsRequireAuth` | GET /notifications sin JWT → 403 |
+| `getNotificationsAuthenticated` | Notificaciones con JWT válido → 200 |
+| `getUnreadNotificationsCount` | Contador de no leídas retorna número |
+| `markAllNotificationsAsRead` | Marcar leídas retorna count |
+| `messagesRequireAuth` | GET /messages sin JWT → 403 |
 | `unreadMessagesCount` | Contador mensajes no leídos |
-| `availabilityPublicEndpointReturnsOk` | Disponibilidad pública |
-| `createAvailabilityRequiresProfessional` | Solo PROFESSIONAL puede crear horarios |
-| `professionalCanCreateAvailability` | Flujo completo de disponibilidad |
+| `availabilityPublicEndpointReturnsOk` | Disponibilidad pública → 200 |
+| `createAvailabilityRequiresProfessional` | CLIENT no puede crear horarios → 403 |
+| `professionalCanCreateAvailability` | Flujo completo: perfil → disponibilidad → 201 |
 
 ---
 
@@ -296,16 +350,29 @@ User ──────────── Professional (1:1)
 | 11 entidades JPA + PostgreSQL | ✅ Completo |
 | Búsqueda geográfica Haversine | ✅ Completo |
 | Integración OpenStreetMap Nominatim | ✅ Completo |
-| API REST completa | ✅ Completo |
-| Confirmación de citas interna | ✅ Completo |
-| Pagos MVP (simulado) | ✅ Completo |
+| API REST completa (40+ endpoints) | ✅ Completo |
+| Confirmación de citas (código 6 dígitos + @Scheduled) | ✅ Completo |
+| Pagos MVP (CARD, YAPE, BANK_TRANSFER simulado) | ✅ Completo |
 | Reseñas + auto-rating | ✅ Completo |
 | Disponibilidad CRUD | ✅ Completo |
-| Mensajería interna (chat) | ✅ Completo |
-| Notificaciones internas | ✅ Completo |
-| Integración MercadoPago real | 🔜 Próximo sprint |
-| Notificaciones push (FCM) | 🔜 Último sprint |
+| Firebase FCM push (MVP simulado) | ✅ Completo |
+| Mensajería REST + WebSocket STOMP en tiempo real | ✅ Completo |
+| Notificaciones internas en BD | ✅ Completo |
+| Foto de perfil con URL externa (sin S3) | ✅ Completo |
 | Frontend React + Leaflet | 🔜 En paralelo |
+
+---
+
+## 🔐 Seguridad
+
+| Aspecto | Detalle |
+|---|---|
+| Auth HTTP | JWT stateless, BCrypt, @PreAuthorize por rol |
+| Auth WebSocket | JWT validado en STOMP CONNECT via ChannelInterceptor |
+| CORS | `allowedOriginPatterns("*")` — solo para desarrollo |
+| Validación DTOs | @Valid con Jakarta (NotBlank, Email, Future, Min, Max) |
+| Manejo de errores | GlobalExceptionHandler → 404/400/401/403/500 con ErrorResponse |
+| open-in-view | `false` — sin lazy loading fuera de transacción |
 
 ---
 
