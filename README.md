@@ -359,7 +359,6 @@ Cliente  ──SEND /app/chat/{bookingId}──►  ChatWebSocketController
 | Mensajería REST + WebSocket STOMP en tiempo real | ✅ Completo |
 | Notificaciones internas en BD | ✅ Completo |
 | Foto de perfil con URL externa (sin S3) | ✅ Completo |
-| Frontend React + Leaflet | 🔜 En paralelo |
 
 ---
 
