@@ -63,7 +63,7 @@ La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos 
 | POST | `/api/auth/register` | Registro (CLIENT o PROFESSIONAL) |
 | POST | `/api/auth/login` | Login → retorna JWT |
 
-**Usuarios de prueba:**
+### Usuarios de prueba
 | Email | Password | Rol |
 |---|---|---|
 | `carlos@servilink.pe` | `password123` | CLIENT |
@@ -71,7 +71,7 @@ La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos 
 | `maria.condori@servilink.pe` | `password123` | PROFESSIONAL |
 | `luis.paredes@servilink.pe` | `password123` | PROFESSIONAL |
 
-### Usuarios ← NUEVO
+### Usuarios
 | Método | Endpoint | Auth | Descripción |
 |---|---|---|---|
 | GET | `/api/users/me` | Sí | Ver mi perfil |
