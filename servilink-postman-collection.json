@@ -12,7 +12,7 @@
   "item": [
 
     {
-      "name": "🔐 Auth",
+      "name": "Auth",
       "item": [
         {
           "name": "Register — CLIENT",
@@ -51,7 +51,7 @@
             "if (pm.response.code === 200) {",
             "  const r = pm.response.json();",
             "  pm.collectionVariables.set('token', r.token);",
-            "  console.log('✅ Token guardado para:', r.email);",
+            "  console.log('Token guardado para:', r.email);",
             "}"
           ], "type": "text/javascript" }}],
           "request": {
@@ -67,7 +67,7 @@
             "if (pm.response.code === 200) {",
             "  const r = pm.response.json();",
             "  pm.collectionVariables.set('token', r.token);",
-            "  console.log('✅ Token profesional guardado para:', r.email);",
+            "  console.log('Token profesional guardado para:', r.email);",
             "}"
           ], "type": "text/javascript" }}],
           "request": {
@@ -81,7 +81,7 @@
     },
 
     {
-      "name": "👤 Usuarios",
+      "name": "Usuarios",
       "item": [
         {
           "name": "GET Mi perfil",
@@ -115,7 +115,7 @@
     },
 
     {
-      "name": "🔧 Profesionales",
+      "name": "Profesionales",
       "item": [
         {
           "name": "GET Buscar cercanos (Haversine)",
@@ -192,7 +192,7 @@
     },
 
     {
-      "name": "📅 Disponibilidad",
+      "name": "Disponibilidad",
       "item": [
         {
           "name": "GET Disponibilidad del profesional",
@@ -248,7 +248,7 @@
     },
 
     {
-      "name": "🗺️ Mapa (OpenStreetMap)",
+      "name": "Mapa (OpenStreetMap)",
       "item": [
         {
           "name": "GET Profesionales para Leaflet (GeoPoints)",
@@ -311,7 +311,7 @@
     },
 
     {
-      "name": "📋 Categorías",
+      "name": "Categorías",
       "item": [
         {
           "name": "GET Todas las categorías",
@@ -362,7 +362,7 @@
     },
 
     {
-      "name": "📆 Reservas",
+      "name": "Reservas",
       "item": [
         {
           "name": "POST Crear reserva",
@@ -444,7 +444,7 @@
     },
 
     {
-      "name": "✅ Confirmación de Citas",
+      "name": "Confirmación de Citas",
       "item": [
         {
           "name": "POST Generar código de confirmación",
@@ -486,7 +486,7 @@
     },
 
     {
-      "name": "💬 Mensajes / Chat",
+      "name": "Mensajes / Chat",
       "item": [
         {
           "name": "POST Enviar mensaje",
@@ -528,7 +528,7 @@
     },
 
     {
-      "name": "🔔 Notificaciones",
+      "name": "Notificaciones",
       "item": [
         {
           "name": "GET Todas mis notificaciones",
@@ -566,7 +566,7 @@
     },
 
     {
-      "name": "💳 Pagos",
+      "name": "Pagos",
       "item": [
         {
           "name": "POST Procesar pago — CARD",
@@ -616,7 +616,7 @@
     },
 
     {
-      "name": "⭐ Reseñas",
+      "name": "Reseñas",
       "item": [
         {
           "name": "POST Crear reseña (reserva COMPLETED)",
@@ -641,7 +641,7 @@
     },
 
     {
-      "name": "🏥 Health Check",
+      "name": "Health Check",
       "item": [
         {
           "name": "GET Actuator Health",
