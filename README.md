@@ -1,4 +1,4 @@
-# 🔧 ServiLink — Backend API
+# ServiLink — Backend API
 
 **CS 2031 Desarrollo Basado en Plataformas — UTEC 2026-1**
 
@@ -6,7 +6,7 @@ Marketplace de servicios domésticos. Conecta clientes con profesionales verific
 
 ---
 
-## 👥 Integrantes
+## Integrantes
 
 | Nombre | Código |
 |---|---|
@@ -18,7 +18,7 @@ Marketplace de servicios domésticos. Conecta clientes con profesionales verific
 
 ---
 
-## 🚀 Cómo correr el proyecto
+## Cómo correr el proyecto
 
 ### Pre-requisitos
 - Java 21
@@ -55,7 +55,7 @@ La app corre en `http://localhost:8081`. Al iniciar por primera vez carga datos 
 
 ---
 
-## 📡 Endpoints REST
+## Endpoints REST
 
 ### Auth (público)
 | Método | Endpoint | Descripción |
@@ -198,7 +198,7 @@ Métodos: `CARD`, `YAPE`, `BANK_TRANSFER`
 
 ---
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 ```
 src/main/java/com/example/demosass/
@@ -282,7 +282,7 @@ src/main/java/com/example/demosass/
 
 ---
 
-## 🗄️ Entidades (11)
+## Entidades (11)
 
 ```
 User ──────────── Professional (1:1)
@@ -302,7 +302,7 @@ User ──────────── Professional (1:1)
 
 ---
 
-## 🌐 WebSocket — Flujo del chat
+## WebSocket — Flujo del chat
 
 ```
 Cliente  ──CONNECT /ws (JWT en header)──►  WebSocketConfig valida token
@@ -317,7 +317,7 @@ Cliente  ──SEND /app/chat/{bookingId}──►  ChatWebSocketController
 
 ---
 
-## 🧪 Tests (14 tests de integración)
+## Tests (14 tests de integración)
 
 ```bash
 ./mvnw test
@@ -342,27 +342,27 @@ Cliente  ──SEND /app/chat/{bookingId}──►  ChatWebSocketController
 
 ---
 
-## 🗓️ Roadmap
+## Roadmap
 
 | Funcionalidad | Estado |
 |---|---|
-| Auth JWT (registro + login) | ✅ Completo |
-| 11 entidades JPA + PostgreSQL | ✅ Completo |
-| Búsqueda geográfica Haversine | ✅ Completo |
-| Integración OpenStreetMap Nominatim | ✅ Completo |
-| API REST completa (40+ endpoints) | ✅ Completo |
-| Confirmación de citas (código 6 dígitos + @Scheduled) | ✅ Completo |
-| Pagos MVP (CARD, YAPE, BANK_TRANSFER simulado) | ✅ Completo |
-| Reseñas + auto-rating | ✅ Completo |
-| Disponibilidad CRUD | ✅ Completo |
-| Firebase FCM push (MVP simulado) | ✅ Completo |
-| Mensajería REST + WebSocket STOMP en tiempo real | ✅ Completo |
-| Notificaciones internas en BD | ✅ Completo |
-| Foto de perfil con URL externa (sin S3) | ✅ Completo |
+| Auth JWT (registro + login) | Completo |
+| 11 entidades JPA + PostgreSQL | Completo |
+| Búsqueda geográfica Haversine | Completo |
+| Integración OpenStreetMap Nominatim | Completo |
+| API REST completa (40+ endpoints) | Completo |
+| Confirmación de citas (código 6 dígitos + @Scheduled) | Completo |
+| Pagos MVP (CARD, YAPE, BANK_TRANSFER simulado) | Completo |
+| Reseñas + auto-rating | Completo |
+| Disponibilidad CRUD | Completo |
+| Firebase FCM push (MVP simulado) | Completo |
+| Mensajería REST + WebSocket STOMP en tiempo real | Completo |
+| Notificaciones internas en BD | Completo |
+| Foto de perfil con URL externa (sin S3) | Completo |
 
 ---
 
-## 🔐 Seguridad
+## Seguridad
 
 | Aspecto | Detalle |
 |---|---|
