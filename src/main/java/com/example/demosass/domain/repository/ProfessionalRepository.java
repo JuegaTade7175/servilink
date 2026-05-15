@@ -14,20 +14,19 @@ public interface ProfessionalRepository extends JpaRepository<Professional, Long
 
     Optional<Professional> findByUserId(Long userId);
 
-    // Fórmula Haversine para calcular distancia (compatible con PostgreSQL y H2)
     @Query("""
         SELECT p FROM Professional p
         WHERE p.latitude IS NOT NULL AND p.longitude IS NOT NULL
-        AND (6371 * acos(
-            cos(radians(:lat)) * cos(radians(p.latitude)) *
-            cos(radians(p.longitude) - radians(:lon)) +
-            sin(radians(:lat)) * sin(radians(p.latitude))
-        )) <= :radiusKm
-        ORDER BY (6371 * acos(
-            cos(radians(:lat)) * cos(radians(p.latitude)) *
-            cos(radians(p.longitude) - radians(:lon)) +
-            sin(radians(:lat)) * sin(radians(p.latitude))
-        )) ASC
+        AND (6371 * 2 * asin(sqrt(
+            power(sin((radians(p.latitude) - radians(:lat)) / 2), 2)
+            + cos(radians(:lat)) * cos(radians(p.latitude))
+            * power(sin((radians(p.longitude) - radians(:lon)) / 2), 2)
+        ))) <= :radiusKm
+        ORDER BY (6371 * 2 * asin(sqrt(
+            power(sin((radians(p.latitude) - radians(:lat)) / 2), 2)
+            + cos(radians(:lat)) * cos(radians(p.latitude))
+            * power(sin((radians(p.longitude) - radians(:lon)) / 2), 2)
+        ))) ASC
     """)
     List<Professional> findNearbyProfessionals(
         @Param("lat") Double latitude,
@@ -47,11 +46,11 @@ public interface ProfessionalRepository extends JpaRepository<Professional, Long
         JOIN p.services s
         WHERE s.category.id = :categoryId
         AND p.latitude IS NOT NULL AND p.longitude IS NOT NULL
-        AND (6371 * acos(
-            cos(radians(:lat)) * cos(radians(p.latitude)) *
-            cos(radians(p.longitude) - radians(:lon)) +
-            sin(radians(:lat)) * sin(radians(p.latitude))
-        )) <= :radiusKm
+        AND (6371 * 2 * asin(sqrt(
+            power(sin((radians(p.latitude) - radians(:lat)) / 2), 2)
+            + cos(radians(:lat)) * cos(radians(p.latitude))
+            * power(sin((radians(p.longitude) - radians(:lon)) / 2), 2)
+        ))) <= :radiusKm
         ORDER BY p.averageRating DESC
     """)
     List<Professional> findByCategoryAndLocation(
