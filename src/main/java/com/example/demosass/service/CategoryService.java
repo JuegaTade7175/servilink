@@ -9,6 +9,7 @@ import com.example.demosass.dto.response.Responses.ServiceResponse;
 import com.example.demosass.exception.BadRequestException;
 import com.example.demosass.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,6 +21,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final ServiceRepository serviceRepository;
 
+    @Transactional
     public CategoryResponse create(String name, String description, String iconUrl) {
         if (categoryRepository.existsByName(name)) {
             throw new BadRequestException("La categoría ya existe");
@@ -29,20 +31,24 @@ public class CategoryService {
         return toResponse(categoryRepository.save(category));
     }
 
+    @Transactional(readOnly = true)
     public List<CategoryResponse> getAll() {
         return categoryRepository.findAll().stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public CategoryResponse getById(Long id) {
         return toResponse(categoryRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada")));
     }
 
+    @Transactional(readOnly = true)
     public List<ServiceResponse> getServicesByCategory(Long categoryId) {
         return serviceRepository.findByCategoryId(categoryId)
             .stream().map(this::serviceToResponse).toList();
     }
 
+    @Transactional
     public ServiceResponse createService(String name, String description,
                                           BigDecimal referencePrice, Integer estimatedHours, Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
